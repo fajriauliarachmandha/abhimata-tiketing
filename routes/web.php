@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\DepartmentController;
+use App\Models\Department;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -12,5 +14,14 @@ Route::get('/about', function () {
 });
 
 Route::get('/pengajuantiket', function () {
-    return Inertia::render('PengajuanTiket');
+    return Inertia::render('User/PengajuanTiket');
 });
+
+Route::prefix('admin')->group(function() {
+    Route::get('/department',[DepartmentController::class,'index'])->name('departments.index');
+    Route::post('/department',[DepartmentController::class,'store'])->name('departments.store');
+    Route::put('/department/{department}', [DepartmentController::class,'update'])->name('departments.update');
+    Route::delete('/department/{department}', [DepartmentController::class,'destroy'])->name('departments.destroy');
+});
+
+

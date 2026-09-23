@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('ticket_number')->unique(); //nomer tiket
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('departement_id')->constrained('departements');
+            $table->foreignId('department_id')->constrained('departments');
             $table->foreignId('category_id')->constrained('categories');
             $table->string('location'); //lokasi perbaikan
             $table->enum('priority', ['Low', 'Medium', 'High', 'Critical'])->default('Medium'); //tingkat urgensi
