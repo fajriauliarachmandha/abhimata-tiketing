@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('employees', function (Blueprint $table) {
+        Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('telp',13)->nullabel();
-            // $table->foreignId('departement_id')->nullable()->constrained()-nullOnDelete();
+            $table->string('username')->unique();
+            $table->string('password');
+            $table->foreignId('department_id')->nullable()->constrained()->nullOnDelete();
+            $table->enum('role',['department','it_support'])->default('department');
             $table->timestamps();
         });
     }
@@ -25,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('employees');
+        Schema::dropIfExists('users');
     }
 };

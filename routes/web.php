@@ -1,7 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\DepartmentController;
-use App\Models\Department;
+use App\Http\Controllers\Admin\UsersController;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -22,6 +23,10 @@ Route::prefix('admin')->group(function() {
     Route::post('/department',[DepartmentController::class,'store'])->name('departments.store');
     Route::put('/department/{department}', [DepartmentController::class,'update'])->name('departments.update');
     Route::delete('/department/{department}', [DepartmentController::class,'destroy'])->name('departments.destroy');
+    Route::get('/users',[UsersController::class,'index'])->name('users.index');
+    Route::post('/users',[UsersController::class,'store'])->name('users.store');
+    Route::put('/users/{users}',[UsersController::class,'update'])->name('users.update');
+    Route::delete('/users/{users}',[UsersController::class,'destroy'])->name('users.destroy');
 });
 
 

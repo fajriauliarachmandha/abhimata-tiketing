@@ -184,13 +184,6 @@
                                         : "Tambah Departemen"
                                 }}
                             </h3>
-                            <button
-                                type="button"
-                                @click="isModalOpen = false"
-                                class="..."
-                            >
-                                <!-- svg close icon tetap sama -->
-                            </button>
                         </div>
 
                         <form @submit.prevent="handleSubmit">
@@ -205,7 +198,7 @@
                                         type="text"
                                         id="kode"
                                         v-model="form.department_code"
-                                        class="..."
+                                        class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
                                         required
                                     />
                                     <span
@@ -225,7 +218,7 @@
                                         type="text"
                                         id="nama"
                                         v-model="form.department_name"
-                                        class="..."
+                                        class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
                                         required
                                     />
                                     <span
@@ -242,7 +235,7 @@
                                 <button
                                     type="submit"
                                     :disabled="form.processing"
-                                    class="..."
+                                    class="inline-flex items-center text-white bg-brand hover:bg-brand-strong box-border border border-transparent focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none"
                                 >
                                     {{
                                         form.processing
@@ -257,7 +250,7 @@
                                 <button
                                     type="button"
                                     @click="isModalOpen = false"
-                                    class="..."
+                                    class="text-body bg-neutral-secondary-medium box-border border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none"
                                 >
                                     Cancel
                                 </button>

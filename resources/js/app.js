@@ -1,13 +1,19 @@
-import { createApp, h } from "vue";
+import { createApp, h, nextTick } from "vue";
 import { createInertiaApp, router } from "@inertiajs/vue3";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 import { initFlowbite } from "flowbite";
 
-router.on("navigate", () => {
-    initFlowbite();
+router.on("finish", () => {
+    nextTick(() => {
+        initFlowbite();
+    });
 });
 
 createInertiaApp({
+    progress: {
+        color: "#4B5563",
+        showSpinner: false,
+    },
     resolve: (name) =>
         resolvePageComponent(
             `./Pages/${name}.vue`,
