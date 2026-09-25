@@ -3,10 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class Users extends Model
+class Users extends Authenticatable
 {
     use HasFactory, Notifiable;
 
@@ -18,31 +18,30 @@ class Users extends Model
         'role'
     ];
 
-    // untuk menyembunyikan dari network tab
     protected $hidden = [
         'password',
         'remember_token'
     ];
 
-    // melakukan hash pada password
-    protected function casts(): array{
-        return[
-            'password'=>'hashed'
+    protected function casts(): array
+    {
+        return [
+            'password' => 'hashed'
         ];
     }
 
-    // relasi ke departemen - 1 department hanya untuk 1 pengguna
-    public function department(){
+    public function department()
+    {
         return $this->belongsTo(Department::class);
     }
 
-    // ngecek role it support
-    public function isItSupport():bool{
+    public function isItSupport(): bool
+    {
         return $this->role === 'it_support';
     }
 
-    // ngecek role departement
-    public function isDepartment():bool{
+    public function isDepartment(): bool
+    {
         return $this->role === 'department';
     }
 }

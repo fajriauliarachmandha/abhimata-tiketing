@@ -32,7 +32,7 @@
 
         <div class="grid h-full max-w-lg grid-cols-4 mx-auto">
             <Link
-                href="/admin/dashboard"
+                href="/admin/home"
                 class="inline-flex flex-col items-center justify-center p-4 hover:bg-neutral-secondary-medium group"
             >
                 <svg
@@ -47,7 +47,7 @@
                     stroke-linejoin="round"
                     class="lucide lucide-house preview-icon"
                     :class="
-                        isActive('/admin/dashboard')
+                        isActive('/admin/Home')
                             ? 'text-fg-brand'
                             : 'text-body group-hover:text-fg-brand'
                     "
