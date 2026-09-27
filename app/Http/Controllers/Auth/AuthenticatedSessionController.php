@@ -18,7 +18,7 @@ class AuthenticatedSessionController extends Controller
     public function store(Request $request){
         $credentials = $request->validate([
             'username'=>'required|string',
-            'password'=>'required|string|min:6|max:12',
+            'password'=>'required|string',
         ]);
 
         if (!Auth::attempt($credentials)){

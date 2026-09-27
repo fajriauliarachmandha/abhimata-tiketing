@@ -21,11 +21,11 @@
                 </Transition>
             </main>
 
-            <Nav class="absolute bottom-0 left-0 right-0 w-full" />
+            <NavAdmin class="absolute bottom-0 left-0 right-0 w-full" />
         </div>
     </div>
 </template>
 
 <script setup>
-import Nav from "./Nav.vue";
+import NavAdmin from "./NavAdmin.vue";
 </script>

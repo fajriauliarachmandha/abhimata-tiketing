@@ -1,5 +1,7 @@
 <template>
-    <div class="z-40 bg-neutral-primary-soft border-t border-default">
+    <div
+        class="z-40 bg-neutral-primary-soft border-t border-default rounded-t-lg shadow-[0_-4px_6px_rgba(0,0,0,0.1)]"
+    >
         <div class="w-full">
             <div
                 class="grid max-w-xs grid-cols-2 gap-1 p-1 mx-auto my-2 bg-neutral-tertiary rounded-base"
@@ -47,9 +49,9 @@
                     stroke-linejoin="round"
                     class="lucide lucide-house preview-icon"
                     :class="
-                        isActive('/admin/Home')
-                            ? 'text-fg-brand'
-                            : 'text-body group-hover:text-fg-brand'
+                        isActive('/admin/home')
+                            ? 'text-primary-500'
+                            : 'text-body group-hover:text-primary-600'
                     "
                 >
                     <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
@@ -77,8 +79,8 @@
                     class="lucide lucide-star preview-icon"
                     :class="
                         isActive('/admin/ratings')
-                            ? 'text-fg-brand'
-                            : 'text-body group-hover:text-fg-brand'
+                            ? 'text-primary-500'
+                            : 'text-body group-hover:text-primary-600'
                     "
                 >
                     <path
@@ -105,8 +107,8 @@
                     class="lucide lucide-rotate-ccw-clock preview-icon"
                     :class="
                         isActive('/admin/history')
-                            ? 'text-fg-brand'
-                            : 'text-body group-hover:text-fg-brand'
+                            ? 'text-primary-500'
+                            : 'text-body group-hover:text-primary-600'
                     "
                 >
                     <path
@@ -135,8 +137,8 @@
                     class="lucide lucide-circle-user-round preview-icon"
                     :class="
                         isActive('/admin/profile')
-                            ? 'text-fg-brand'
-                            : 'text-body group-hover:text-fg-brand'
+                            ? 'text-primary-500'
+                            : 'text-body group-hover:text-primary-600'
                     "
                 >
                     <path d="M17.925 20.056a6 6 0 0 0-11.851.001" />

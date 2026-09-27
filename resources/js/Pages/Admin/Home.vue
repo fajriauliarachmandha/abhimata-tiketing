@@ -12,11 +12,15 @@
                     <div
                         class="font-semibold text-lg text-heading leading-tight"
                     >
-                        <div>Hallo, { user }</div>
+                        <div>Hallo, {{ user.name }}</div>
                         <div
                             class="text-sm font-normal text-body leading-tight"
                         >
-                            Departemen IT Support
+                            {{
+                                user.role === "department"
+                                    ? user.department?.department_name
+                                    : "Departemen IT Support"
+                            }}
                         </div>
                         <span
                             class="inline-flex items-center gap-1 bg-brand-softer text-fg-brand-strong text-xs font-medium px-1.5 py-0.5 rounded"
@@ -111,11 +115,14 @@
     </AdminLayout>
 </template>
 
-<script setup lang="ts">
-import { ref } from "vue";
+<script setup>
+import { computed, ref } from "vue";
 import AdminLayout from "../../Layouts/AdminLayout.vue";
+import { usePage } from "@inertiajs/vue3";
 const randomSeed = ref(Math.random().toString(36).substring(2, 10));
 const avatarUrl = ref(
     `https://api.dicebear.com/10.x/loops/svg?tags=animation&seed=${randomSeed.value}`,
 );
+const page = usePage();
+const user = computed(() => page.props.auth.user);
 </script>

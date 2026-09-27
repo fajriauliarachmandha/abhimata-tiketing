@@ -62,7 +62,7 @@
                                     type="text"
                                     id="input-group-1"
                                     v-model="form.username"
-                                    class="block w-full ps-9 pe-3 py-2.5 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+                                    class="block w-full ps-9 pe-3 py-4 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body transition-all duration-200 ease-in-out"
                                     placeholder="Username . . ."
                                 />
                             </div>
@@ -75,7 +75,7 @@
 
                             <label
                                 for="input-group-1"
-                                class="block mb-2.5 text-sm font-medium text-heading"
+                                class="block mb-2.5 text-sm font-medium text-heading mt-4"
                                 >Password</label
                             >
                             <div class="relative">
@@ -104,14 +104,14 @@
                                     type="password"
                                     id="input-group-1"
                                     v-model="form.password"
-                                    class="block w-full ps-9 pe-3 py-2.5 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+                                    class="block w-full ps-9 pe-3 py-4 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body transition-all duration-200 ease-in-out"
                                     placeholder="Password . . ."
                                 />
                             </div>
                             <button
                                 type="submit"
                                 :disabled="form.processing"
-                                class="text-white bg-brand box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none w-full mt-5"
+                                class="text-white bg-primary-500 hover:bg-primary-600 focus:ring-4 focus:ring-primary-300 font-medium rounded-full text-sm px-5 py-4 focus:outline-none w-full mt-5 transition-all duration-200 ease-in-out active:scale-95"
                             >
                                 {{ form.processing ? "Masuk..." : "Masuk" }}
                             </button>

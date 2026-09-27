@@ -28,12 +28,8 @@ Route::middleware('auth','it_support')->prefix('admin')->group(function() {
     Route::post('/users',[UsersController::class,'store'])->name('users.store');
     Route::put('/users/{users}',[UsersController::class,'update'])->name('users.update');
     Route::delete('/users/{users}',[UsersController::class,'destroy'])->name('users.destroy');
-    Route::get('/home', [HomeController::class, 'index'])->name('home');
+    Route::get('/home', [HomeController::class, 'index'])->name('admin.home');
 });
-
-Route::get('/login', function () {
-    return Inertia::render('Auth/Login');
-})->name('login');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
