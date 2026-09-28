@@ -17,7 +17,6 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('department_id')->constrained('departments');
             $table->foreignId('category_id')->constrained('categories');
-            $table->string('location'); //lokasi perbaikan
             $table->enum('priority', ['Low', 'Medium', 'High', 'Critical'])->default('Medium'); //tingkat urgensi
             $table->text('description'); //deskripsi perbaikan
             $table->string('attachment')->nullable(); //foto

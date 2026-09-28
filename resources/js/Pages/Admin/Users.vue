@@ -29,14 +29,14 @@
                         type="text"
                         id="input-group-1"
                         v-model="searchQuery"
-                        class="block w-full max-w-96 ps-9 pe-3 py-2 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:border-brand shadow-xs placeholder:text-body transition-all duration-150 focus:ring-2 focus:ring-brand focus:scale-[1.01]"
+                        class="block w-full max-w-96 ps-9 pe-3 py-4 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:border-brand shadow-xs placeholder:text-body transition-all duration-150 focus:ring-2 focus:ring-brand focus:scale-[1.01]"
                         placeholder="Pencarian . . ."
                     />
                 </div>
                 <button
                     type="button"
-                    @click="openAddModal"
-                    class="inline-flex items-center justify-center gap-2 shrink-0 text-white bg-brand border border-transparent shadow-xs font-medium text-sm leading-5 rounded-base px-4 py-2.5 hover:bg-brand-strong focus:outline-none focus:ring-4 focus:ring-brand-medium active:scale-95 transition duration-200 ease-in-out"
+                    @click="openAddDrawer"
+                    class="inline-flex items-center justify-center gap-2 shrink-0 text-white bg-primary-500 border border-transparent shadow-xs font-medium text-sm leading-5 rounded-full px-4 py-4 hover:bg-primary-600 focus:outline-none focus:ring-4 focus:ring-primary-300 active:scale-95 transition duration-200 ease-in-out"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -104,7 +104,7 @@
                             <td class="px-6 py-4 space-x-3">
                                 <button
                                     type="button"
-                                    @click="openUpdateModal(users)"
+                                    @click="openUpdateDrawer(users)"
                                     class="font-medium text-fg-brand hover:underline transition-all duration-200 ease-in-out hover:scale-105 active:scale-95"
                                 >
                                     <svg
@@ -169,7 +169,7 @@
                 </table>
             </div>
 
-            <!-- Modal -->
+            <!-- drawer component -->
             <Transition
                 enter-active-class="transition ease-out duration-200"
                 enter-from-class="opacity-0 scale-95"
@@ -179,199 +179,207 @@
                 leave-to-class="opacity-0 scale-95"
             >
                 <div
-                    v-if="isModalOpen"
-                    class="fixed inset-0 z-[100] flex justify-center items-center bg-black/50 overflow-y-auto overflow-x-hidden p-4"
+                    v-if="isDrawerOpen"
+                    id="drawer-bottom-example"
+                    class="fixed bottom-0 left-0 right-0 z-[100] w-full px-4 pb-4 pt-3 overflow-y-auto transition-transform bg-neutral-primary-soft transform-none rounded-t-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-default"
+                    tabindex="-1"
+                    aria-labelledby="drawer-bottom-label"
                 >
-                    <div class="relative w-full max-w-md max-h-full">
-                        <div
-                            class="relative bg-neutral-primary-soft border border-default rounded-base shadow-sm p-4 md:p-6"
+                    <div class="flex justify-between pb-2 items-center">
+                        <h3 class="text-lg font-medium text-heading">
+                            {{
+                                editingId ? "Edit Pengguna" : "Tambah Pengguna"
+                            }}
+                        </h3>
+                        <button
+                            type="button"
+                            @click="isDrawerOpen = false"
+                            class="text-body bg-transparent hover:text-heading hover:bg-neutral-tertiary rounded-base w-9 h-9 flex items-center justify-center ms-auto transition-all duration-200 ease-in-out hover:scale-105 active:scale-95"
                         >
-                            <div
-                                class="flex items-center justify-between border-b border-default pb-4 md:pb-5"
+                            <svg
+                                class="w-5 h-5"
+                                aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                fill="none"
+                                viewBox="0 0 24 24"
                             >
-                                <h3 class="text-lg font-medium text-heading">
-                                    {{
-                                        editingId
-                                            ? "Edit Pengguna"
-                                            : "Tambah Pengguna"
-                                    }}
-                                </h3>
-                                <button
-                                    type="button"
-                                    @click="isModalOpen = false"
-                                    class="text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-base text-sm w-9 h-9 ms-auto inline-flex justify-center items-center transition-all duration-200 ease-in-out hover:scale-105 active:scale-95"
-                                >
-                                    <!-- svg close icon tetap sama -->
-                                </button>
-                            </div>
-
-                            <form @submit.prevent="handleSubmit">
-                                <div
-                                    class="grid gap-4 grid-cols-2 py-4 md:py-6"
-                                >
-                                    <div class="col-span-2">
-                                        <label
-                                            for="name"
-                                            class="block mb-2.5 text-sm font-medium text-heading"
-                                            >Nama</label
-                                        >
-                                        <input
-                                            type="text"
-                                            id="name"
-                                            v-model="form.name"
-                                            class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body transition-all duration-150 focus:ring-2 focus:ring-brand focus:scale-[1.01]"
-                                            required
-                                        />
-                                        <span
-                                            v-if="form.errors.name"
-                                            class="text-xs text-red-500 mt-1 block"
-                                        >
-                                            {{ form.errors.name }}
-                                        </span>
-                                    </div>
-                                    <div class="col-span-2">
-                                        <label
-                                            for="username"
-                                            class="block mb-2.5 text-sm font-medium text-heading"
-                                            >Username</label
-                                        >
-                                        <input
-                                            type="text"
-                                            id="username"
-                                            v-model="form.username"
-                                            class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body transition-all duration-150 focus:ring-2 focus:ring-brand focus:scale-[1.01]"
-                                            required
-                                        />
-                                        <span
-                                            v-if="form.errors.username"
-                                            class="text-xs text-red-500 mt-1 block"
-                                        >
-                                            {{ form.errors.username }}
-                                        </span>
-                                    </div>
-                                    <div class="col-span-2">
-                                        <label
-                                            for="password"
-                                            class="block mb-2.5 text-sm font-medium text-heading"
-                                            >Password</label
-                                        >
-                                        <input
-                                            type="password"
-                                            id="password"
-                                            v-model="form.password"
-                                            class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-danger transition-all duration-150 focus:ring-2 focus:ring-brand focus:scale-[1.01]"
-                                            :required="!editingId"
-                                            :placeholder="
-                                                editingId
-                                                    ? 'Kosongkan jika tidak ingin mengganti password'
-                                                    : ''
-                                            "
-                                        />
-                                        <span
-                                            v-if="form.errors.password"
-                                            class="text-xs text-red-500 mt-1 block"
-                                        >
-                                            {{ form.errors.password }}
-                                        </span>
-                                    </div>
-                                    <div class="col-span-2">
-                                        <label
-                                            for="departement_id"
-                                            class="block mb-2.5 text-sm font-medium text-heading"
-                                            >Departemen</label
-                                        >
-                                        <div class="flex flex-wrap gap-2">
-                                            <label
-                                                v-for="dept in departments"
-                                                :key="dept.id"
-                                                class="cursor-pointer"
-                                            >
-                                                <input
-                                                    type="radio"
-                                                    name="departement_id"
-                                                    :value="dept.id"
-                                                    v-model="form.department_id"
-                                                    class="sr-only peer"
-                                                />
-
-                                                <div
-                                                    class="px-3.5 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg border border-gray-200 transition-all duration-200 ease-in-out active:scale-95 peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 peer-checked:shadow-md peer-checked:scale-[1.02]"
-                                                >
-                                                    {{ dept.department_name }}
-                                                </div>
-                                            </label>
-                                        </div>
-                                        <span
-                                            v-if="form.errors.department"
-                                            class="text-xs text-red-500 mt-1 block"
-                                        >
-                                            {{ form.errors.department }}
-                                        </span>
-                                    </div>
-                                    <div class="col-span-2">
-                                        <label
-                                            for="role"
-                                            class="block mb-2.5 text-sm font-medium text-heading"
-                                            >Role</label
-                                        >
-                                        <div class="flex flex-wrap gap-2">
-                                            <label
-                                                v-for="item in roleOptions"
-                                                :key="item"
-                                                class="cursor-pointer"
-                                            >
-                                                <input
-                                                    type="radio"
-                                                    name="role"
-                                                    :value="item.value"
-                                                    v-model="form.role"
-                                                    class="sr-only peer"
-                                                />
-
-                                                <div
-                                                    class="px-3.5 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg border border-gray-200 transition-all duration-200 ease-in-out active:scale-95 peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 peer-checked:shadow-md peer-checked:scale-[1.02]"
-                                                >
-                                                    {{ item.label }}
-                                                </div>
-                                            </label>
-                                        </div>
-                                        <span
-                                            v-if="form.errors.role"
-                                            class="text-xs text-red-500 mt-1 block"
-                                        >
-                                            {{ form.errors.role }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div
-                                    class="flex justify-end items-center space-x-4 border-t border-default pt-4 md:pt-6"
-                                >
-                                    <button
-                                        type="submit"
-                                        :disabled="form.processing"
-                                        class="inline-flex items-center text-white bg-brand hover:bg-brand-strong box-border border border-transparent focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none transition-all duration-200 ease-in-out hover:scale-105 active:scale-95"
-                                    >
-                                        {{
-                                            form.processing
-                                                ? editingId
-                                                    ? "Updating..."
-                                                    : "Saving..."
-                                                : editingId
-                                                  ? "Update"
-                                                  : "Simpan"
-                                        }}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        @click="isModalOpen = false"
-                                        class="text-body bg-neutral-secondary-medium box-border border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none transition-all duration-200 ease-in-out hover:scale-105 active:scale-95"
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                                <path
+                                    stroke="currentColor"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M6 18 17.94 6M18 18 6.06 6"
+                                />
+                            </svg>
+                            <span class="sr-only">Close menu</span>
+                        </button>
                     </div>
+                    <form @submit.prevent="handleSubmit">
+                        <div class="grid gap-4 grid-cols-2 py-2">
+                            <div class="col-span-2">
+                                <label
+                                    for="name"
+                                    class="block mb-2.5 text-sm font-medium text-heading"
+                                    >Nama</label
+                                >
+                                <input
+                                    type="text"
+                                    id="name"
+                                    v-model="form.name"
+                                    class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:border-brand block w-full px-3 py-3 shadow-xs placeholder:text-body transition-all duration-150 focus:ring-2 focus:ring-brand focus:scale-[1.01]"
+                                    required
+                                />
+                                <span
+                                    v-if="form.errors.name"
+                                    class="text-xs text-red-500 mt-1 block"
+                                >
+                                    {{ form.errors.name }}
+                                </span>
+                            </div>
+                            <div class="col-span-2">
+                                <label
+                                    for="username"
+                                    class="block mb-2.5 text-sm font-medium text-heading"
+                                    >Username</label
+                                >
+                                <input
+                                    type="text"
+                                    id="username"
+                                    v-model="form.username"
+                                    class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:border-brand block w-full px-3 py-3 shadow-xs placeholder:text-body transition-all duration-150 focus:ring-2 focus:ring-brand focus:scale-[1.01]"
+                                    required
+                                />
+                                <span
+                                    v-if="form.errors.username"
+                                    class="text-xs text-red-500 mt-1 block"
+                                >
+                                    {{ form.errors.username }}
+                                </span>
+                            </div>
+                            <div class="col-span-2">
+                                <label
+                                    for="password"
+                                    class="block mb-2.5 text-sm font-medium text-heading"
+                                    >Password</label
+                                >
+                                <input
+                                    type="password"
+                                    id="password"
+                                    v-model="form.password"
+                                    class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:border-brand block w-full px-3 py-3 shadow-xs placeholder:text-danger transition-all duration-150 focus:ring-2 focus:ring-brand focus:scale-[1.01]"
+                                    :required="!editingId"
+                                    :placeholder="
+                                        editingId
+                                            ? 'Kosongkan jika tidak ingin mengganti password'
+                                            : ''
+                                    "
+                                />
+                                <span
+                                    v-if="form.errors.password"
+                                    class="text-xs text-red-500 mt-1 block"
+                                >
+                                    {{ form.errors.password }}
+                                </span>
+                            </div>
+                            <div class="col-span-2">
+                                <label
+                                    for="departement_id"
+                                    class="block mb-2.5 text-sm font-medium text-heading"
+                                    >Departemen</label
+                                >
+                                <div class="flex flex-wrap gap-2">
+                                    <label
+                                        v-for="dept in departments"
+                                        :key="dept.id"
+                                        class="cursor-pointer"
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="departement_id"
+                                            :value="dept.id"
+                                            v-model="form.department_id"
+                                            class="sr-only peer"
+                                        />
+
+                                        <div
+                                            class="px-3 py-3 bg-gray-100 text-gray-700 text-sm rounded-full border border-gray-200 transition-all duration-200 ease-in-out active:scale-95 peer-checked:bg-dark peer-checked:text-white peer-checked:border-dark peer-checked:shadow-md peer-checked:scale-[1.02]"
+                                        >
+                                            {{ dept.department_name }}
+                                        </div>
+                                    </label>
+                                </div>
+                                <span
+                                    v-if="form.errors.department"
+                                    class="text-xs text-red-500 mt-1 block"
+                                >
+                                    {{ form.errors.department }}
+                                </span>
+                            </div>
+                            <div class="col-span-2">
+                                <label
+                                    for="role"
+                                    class="block mb-2.5 text-sm font-medium text-heading"
+                                    >Role</label
+                                >
+                                <div class="flex flex-wrap gap-2">
+                                    <label
+                                        v-for="item in roleOptions"
+                                        :key="item"
+                                        class="cursor-pointer"
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="role"
+                                            :value="item.value"
+                                            v-model="form.role"
+                                            class="sr-only peer"
+                                        />
+
+                                        <div
+                                            class="px-3 py-3 bg-gray-100 text-gray-700 text-sm rounded-full border border-gray-200 transition-all duration-200 ease-in-out active:scale-95 peer-checked:bg-dark peer-checked:text-white peer-checked:border-dark peer-checked:shadow-md peer-checked:scale-[1.02]"
+                                        >
+                                            {{ item.label }}
+                                        </div>
+                                    </label>
+                                </div>
+                                <span
+                                    v-if="form.errors.role"
+                                    class="text-xs text-red-500 mt-1 block"
+                                >
+                                    {{ form.errors.role }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div
+                            class="flex justify-end items-center space-x-4 border-t border-default pt-4 md:pt-6"
+                        >
+                            <button
+                                type="submit"
+                                :disabled="form.processing"
+                                class="inline-flex items-center text-white bg-primary-500 hover:bg-primary-600 box-border border border-transparent focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-full text-sm px-4 py-4 focus:outline-none transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 mt-2"
+                            >
+                                {{
+                                    form.processing
+                                        ? editingId
+                                            ? "Updating..."
+                                            : "Saving..."
+                                        : editingId
+                                          ? "Update"
+                                          : "Simpan"
+                                }}
+                            </button>
+                            <button
+                                type="button"
+                                @click="isDrawerOpen = false"
+                                class="text-body bg-neutral-secondary-medium box-border border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none transition-all duration-200 ease-in-out hover:scale-105 active:scale-95"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </Transition>
         </main>
@@ -400,16 +408,16 @@ const form = useForm({
 });
 
 const editingId = ref(null);
-const isModalOpen = ref(false);
+const isDrawerOpen = ref(false);
 
-const openAddModal = () => {
+const openAddDrawer = () => {
     editingId.value = null;
     form.reset();
     form.clearErrors();
-    isModalOpen.value = true;
+    isDrawerOpen.value = true;
 };
 
-const openUpdateModal = (user) => {
+const openUpdateDrawer = (user) => {
     editingId.value = user.id;
     form.name = user.name;
     form.username = user.username;
@@ -417,21 +425,21 @@ const openUpdateModal = (user) => {
     form.role = user.role;
     form.password = "";
     form.clearErrors();
-    isModalOpen.value = true;
+    isDrawerOpen.value = true;
 };
 
 const handleSubmit = () => {
     if (editingId.value) {
         form.put(`/admin/users/${editingId.value}`, {
             onSuccess: () => {
-                isModalOpen.value = false;
+                isDrawerOpen.value = false;
                 form.reset();
             },
         });
     } else {
         form.post("/admin/users", {
             onSuccess: () => {
-                isModalOpen.value = false;
+                isDrawerOpen.value = false;
                 form.reset();
             },
         });

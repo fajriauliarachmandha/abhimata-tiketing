@@ -4,12 +4,10 @@ use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\HomeController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\User\TicketController;
+use App\Http\Controllers\User\HomeController as UserHomeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-
-Route::get('/', function () {
-    return Inertia::render('Welcome');
-});
 
 Route::get('/about', function () {
     return Inertia::render('About');
@@ -38,6 +36,11 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+});
+
+Route::middleware('auth')->prefix('user')->group(function() {
+    Route::get('/home', [UserHomeController::class, 'index'])->name('user.home');
+    Route::get('/ticket', [TicketController::class, 'index'])->name('user.ticket');
 });
 
 // nanti pas udah bikin controller buat tiket, route ini bisa diaktifin lagi

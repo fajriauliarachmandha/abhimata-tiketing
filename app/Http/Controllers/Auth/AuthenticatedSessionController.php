@@ -31,7 +31,7 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
-        return $user->role==='it_support'?redirect()->route('admin.home'):redirect()->route('tickets.create');
+        return $user->role==='it_support'?redirect()->route('admin.home'):redirect()->route('user.home');
     }
 
     public function destroy(Request $request){

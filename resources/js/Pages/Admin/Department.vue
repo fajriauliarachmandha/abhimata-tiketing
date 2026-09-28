@@ -29,14 +29,14 @@
                         type="text"
                         id="input-group-1"
                         v-model="searchQuery"
-                        class="block w-full max-w-96 ps-9 pe-3 py-2 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
-                        placeholder="Search"
+                        class="block w-full max-w-96 ps-9 pe-3 py-4 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+                        placeholder="Pencarian . . ."
                     />
                 </div>
                 <button
                     type="button"
                     @click="openAddModal"
-                    class="inline-flex items-center justify-center gap-2 shrink-0 text-white bg-brand border border-transparent shadow-xs font-medium text-sm leading-5 rounded-base px-4 py-2.5 hover:bg-brand-strong focus:outline-none focus:ring-4 focus:ring-brand-medium active:scale-95 transition duration-200 ease-in-out"
+                    class="inline-flex items-center justify-center gap-2 shrink-0 text-white bg-primary-500 border border-transparent shadow-xs font-medium text-sm leading-5 rounded-full px-4 py-4 hover:bg-primary-600 focus:outline-none focus:ring-4 focus:ring-brand-medium active:scale-95 transition duration-200 ease-in-out"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -57,7 +57,7 @@
                         <path d="M6 10H4a2 2 0 00-2 2v7a2 2 0 002 2h8.535" />
                         <path d="M6 21V5a2 2 0 012-2h8a2 2 0 012 2v7.126" />
                     </svg>
-                    <span>Add Dept</span>
+                    <span>Tambah</span>
                 </button>
             </div>
 
@@ -165,100 +165,127 @@
                 </table>
             </div>
 
-            <!-- Modal -->
-            <div
-                v-if="isModalOpen"
-                class="fixed inset-0 z-50 flex justify-center items-center bg-black/50 overflow-y-auto overflow-x-hidden p-4"
+            <!-- drawer component -->
+            <Transition
+                enter-active-class="transition ease-out duration-200"
+                enter-from-class="opacity-0 scale-95"
+                enter-to-class="opacity-100 scale-100"
+                leave-active-class="transition ease-in duration-150"
+                leave-from-class="opacity-100 scale-100"
+                leave-to-class="opacity-0 scale-95"
             >
-                <div class="relative w-full max-w-md max-h-full">
-                    <div
-                        class="relative bg-neutral-primary-soft border border-default rounded-base shadow-sm p-4 md:p-6"
-                    >
-                        <div
-                            class="flex items-center justify-between border-b border-default pb-4 md:pb-5"
+                <div
+                    v-if="isDrawerOpen"
+                    id="drawer-bottom-example"
+                    class="fixed bottom-0 left-0 right-0 z-[100] w-full px-4 pb-4 pt-3 overflow-y-auto transition-transform bg-neutral-primary-soft transform-none rounded-t-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-default"
+                    tabindex="-1"
+                    aria-labelledby="drawer-bottom-label"
+                >
+                    <div class="flex justify-between pb-2 items-center">
+                        <h3 class="text-lg font-medium text-heading">
+                            {{
+                                editingId
+                                    ? "Edit Departemen"
+                                    : "Tambah Departemen"
+                            }}
+                        </h3>
+                        <button
+                            type="button"
+                            @click="isDrawerOpen = false"
+                            class="text-body bg-transparent hover:text-heading hover:bg-neutral-tertiary rounded-base w-9 h-9 flex items-center justify-center ms-auto transition-all duration-200 ease-in-out hover:scale-105 active:scale-95"
                         >
-                            <h3 class="text-lg font-medium text-heading">
-                                {{
-                                    editingId
-                                        ? "Edit Departemen"
-                                        : "Tambah Departemen"
-                                }}
-                            </h3>
-                        </div>
-
-                        <form @submit.prevent="handleSubmit">
-                            <div class="grid gap-4 grid-cols-2 py-4 md:py-6">
-                                <div class="col-span-2">
-                                    <label
-                                        for="kode"
-                                        class="block mb-2.5 text-sm font-medium text-heading"
-                                        >Kode Departemen</label
-                                    >
-                                    <input
-                                        type="text"
-                                        id="kode"
-                                        v-model="form.department_code"
-                                        class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                                        required
-                                    />
-                                    <span
-                                        v-if="form.errors.department_code"
-                                        class="text-xs text-red-500 mt-1 block"
-                                    >
-                                        {{ form.errors.department_code }}
-                                    </span>
-                                </div>
-                                <div class="col-span-2">
-                                    <label
-                                        for="nama"
-                                        class="block mb-2.5 text-sm font-medium text-heading"
-                                        >Nama Departemen</label
-                                    >
-                                    <input
-                                        type="text"
-                                        id="nama"
-                                        v-model="form.department_name"
-                                        class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                                        required
-                                    />
-                                    <span
-                                        v-if="form.errors.department_name"
-                                        class="text-xs text-red-500 mt-1 block"
-                                    >
-                                        {{ form.errors.department_name }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div
-                                class="flex justify-end items-center space-x-4 border-t border-default pt-4 md:pt-6"
+                            <svg
+                                class="w-5 h-5"
+                                aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                fill="none"
+                                viewBox="0 0 24 24"
                             >
-                                <button
-                                    type="submit"
-                                    :disabled="form.processing"
-                                    class="inline-flex items-center text-white bg-brand hover:bg-brand-strong box-border border border-transparent focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none"
+                                <path
+                                    stroke="currentColor"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M6 18 17.94 6M18 18 6.06 6"
+                                />
+                            </svg>
+                            <span class="sr-only">Close menu</span>
+                        </button>
+                    </div>
+                    <form @submit.prevent="handleSubmit">
+                        <div class="grid gap-4 grid-cols-2 py-2">
+                            <div class="col-span-2">
+                                <label
+                                    for="kode"
+                                    class="block mb-2.5 text-sm font-medium text-heading"
+                                    >Kode Departemen</label
                                 >
-                                    {{
-                                        form.processing
-                                            ? editingId
-                                                ? "Updating..."
-                                                : "Saving..."
-                                            : editingId
-                                              ? "Update"
-                                              : "Simpan"
-                                    }}
-                                </button>
-                                <button
-                                    type="button"
-                                    @click="isModalOpen = false"
-                                    class="text-body bg-neutral-secondary-medium box-border border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none"
+                                <input
+                                    type="text"
+                                    id="kode"
+                                    v-model="form.department_code"
+                                    class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
+                                    required
+                                />
+                                <span
+                                    v-if="form.errors.department_code"
+                                    class="text-xs text-red-500 mt-1 block"
                                 >
-                                    Cancel
-                                </button>
+                                    {{ form.errors.department_code }}
+                                </span>
                             </div>
-                        </form>
+                            <div class="col-span-2">
+                                <label
+                                    for="nama"
+                                    class="block mb-2.5 text-sm font-medium text-heading"
+                                    >Nama Departemen</label
+                                >
+                                <input
+                                    type="text"
+                                    id="nama"
+                                    v-model="form.department_name"
+                                    class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
+                                    required
+                                />
+                                <span
+                                    v-if="form.errors.department_name"
+                                    class="text-xs text-red-500 mt-1 block"
+                                >
+                                    {{ form.errors.department_name }}
+                                </span>
+                            </div>
+                        </div>
+                    </form>
+                    <div
+                        class="flex justify-end items-center space-x-4 border-t border-default pt-4 md:pt-6"
+                    >
+                        <button
+                            type="submit"
+                            :disabled="form.processing"
+                            class="inline-flex items-center text-white bg-primary-500 hover:bg-primary-600 box-border border border-transparent focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-full text-sm px-4 py-4 focus:outline-none transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 mt-2"
+                        >
+                            {{
+                                form.processing
+                                    ? editingId
+                                        ? "Updating..."
+                                        : "Saving..."
+                                    : editingId
+                                      ? "Update"
+                                      : "Simpan"
+                            }}
+                        </button>
+                        <button
+                            type="button"
+                            @click="isDrawerOpen = false"
+                            class="text-body bg-neutral-secondary-medium box-border border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary shadow-xs font-medium leading-5 rounded-full text-sm px-4 py-4 focus:outline-none transition-all duration-200 ease-in-out hover:scale-105 active:scale-95"
+                        >
+                            Cancel
+                        </button>
                     </div>
                 </div>
-            </div>
+            </Transition>
         </main>
     </AdminLayout>
 </template>
@@ -281,13 +308,13 @@ const form = useForm({
 });
 
 const editingId = ref(null);
-const isModalOpen = ref(false);
+const isDrawerOpen = ref(false);
 
 const openAddModal = () => {
     editingId.value = null;
     form.reset();
     form.clearErrors();
-    isModalOpen.value = true;
+    isDrawerOpen.value = true;
 };
 
 const openUpdateModal = (dept) => {
@@ -295,21 +322,21 @@ const openUpdateModal = (dept) => {
     form.department_code = dept.department_code;
     form.department_name = dept.department_name;
     form.clearErrors();
-    isModalOpen.value = true;
+    isDrawerOpen.value = true;
 };
 
 const handleSubmit = () => {
     if (editingId.value) {
         form.put(`/admin/department/${editingId.value}`, {
             onSuccess: () => {
-                isModalOpen.value = false;
+                isDrawerOpen.value = false;
                 form.reset();
             },
         });
     } else {
         form.post("/admin/department", {
             onSuccess: () => {
-                isModalOpen.value = false;
+                isDrawerOpen.value = false;
                 form.reset();
             },
         });

@@ -21,7 +21,7 @@
                 </Transition>
             </main>
 
-            <NavAdmin class="absolute bottom-0 left-0 right-0 w-full" />
+            <NavAdmin />
         </div>
     </div>
 </template>
