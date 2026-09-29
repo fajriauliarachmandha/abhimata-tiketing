@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
     {
         Department::create([
             'department_code' => 'IT',
-            'department_name' => 'Support',
+            'department_name' => 'IT Support',
         ]);
         Users::create([
             'name'=>'Pajrid Aulia Rachmandha',

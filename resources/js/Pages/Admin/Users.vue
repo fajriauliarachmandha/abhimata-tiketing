@@ -181,7 +181,7 @@
                 <div
                     v-if="isDrawerOpen"
                     id="drawer-bottom-example"
-                    class="fixed bottom-0 left-0 right-0 z-[100] w-full px-4 pb-4 pt-3 overflow-y-auto transition-transform bg-neutral-primary-soft transform-none rounded-t-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-default"
+                    class="fixed bottom-0 inset-x-0 mx-auto z-[100] w-full max-w-md px-4 pb-4 pt-3 overflow-y-auto transition-transform bg-neutral-primary-soft transform-none rounded-t-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-default"
                     tabindex="-1"
                     aria-labelledby="drawer-bottom-label"
                 >

@@ -40,7 +40,11 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware('auth')->prefix('user')->group(function() {
     Route::get('/home', [UserHomeController::class, 'index'])->name('user.home');
-    Route::get('/ticket', [TicketController::class, 'index'])->name('user.ticket');
+    Route::get('/ticket', [TicketController::class, 'index'])->name('ticket.index');
+    Route::get('/ticket', function () {
+        return Inertia::render('User/Ticket');
+    })->name('ticket.create');
+    Route::post('/ticket', [TicketController::class, 'store'])->name('ticket.store');
 });
 
 // nanti pas udah bikin controller buat tiket, route ini bisa diaktifin lagi

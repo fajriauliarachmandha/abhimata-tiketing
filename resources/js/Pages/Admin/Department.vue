@@ -177,7 +177,7 @@
                 <div
                     v-if="isDrawerOpen"
                     id="drawer-bottom-example"
-                    class="fixed bottom-0 left-0 right-0 z-[100] w-full px-4 pb-4 pt-3 overflow-y-auto transition-transform bg-neutral-primary-soft transform-none rounded-t-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-default"
+                    class="fixed bottom-0 inset-x-0 mx-auto z-[100] w-full max-w-md px-4 pb-4 pt-3 overflow-y-auto transition-transform bg-neutral-primary-soft transform-none rounded-t-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-default"
                     tabindex="-1"
                     aria-labelledby="drawer-bottom-label"
                 >
@@ -257,33 +257,33 @@
                                 </span>
                             </div>
                         </div>
+                        <div
+                            class="flex justify-end items-center space-x-4 border-t border-default pt-4 md:pt-6"
+                        >
+                            <button
+                                type="submit"
+                                :disabled="form.processing"
+                                class="inline-flex items-center text-white bg-primary-500 hover:bg-primary-600 box-border border border-transparent focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-full text-sm px-4 py-4 focus:outline-none transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 mt-2"
+                            >
+                                {{
+                                    form.processing
+                                        ? editingId
+                                            ? "Updating..."
+                                            : "Saving..."
+                                        : editingId
+                                          ? "Update"
+                                          : "Simpan"
+                                }}
+                            </button>
+                            <button
+                                type="button"
+                                @click="isDrawerOpen = false"
+                                class="text-body bg-neutral-secondary-medium box-border border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary shadow-xs font-medium leading-5 rounded-full text-sm px-4 py-4 focus:outline-none transition-all duration-200 ease-in-out hover:scale-105 active:scale-95"
+                            >
+                                Cancel
+                            </button>
+                        </div>
                     </form>
-                    <div
-                        class="flex justify-end items-center space-x-4 border-t border-default pt-4 md:pt-6"
-                    >
-                        <button
-                            type="submit"
-                            :disabled="form.processing"
-                            class="inline-flex items-center text-white bg-primary-500 hover:bg-primary-600 box-border border border-transparent focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-full text-sm px-4 py-4 focus:outline-none transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 mt-2"
-                        >
-                            {{
-                                form.processing
-                                    ? editingId
-                                        ? "Updating..."
-                                        : "Saving..."
-                                    : editingId
-                                      ? "Update"
-                                      : "Simpan"
-                            }}
-                        </button>
-                        <button
-                            type="button"
-                            @click="isDrawerOpen = false"
-                            class="text-body bg-neutral-secondary-medium box-border border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary shadow-xs font-medium leading-5 rounded-full text-sm px-4 py-4 focus:outline-none transition-all duration-200 ease-in-out hover:scale-105 active:scale-95"
-                        >
-                            Cancel
-                        </button>
-                    </div>
                 </div>
             </Transition>
         </main>

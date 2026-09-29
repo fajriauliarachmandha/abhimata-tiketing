@@ -70,9 +70,9 @@ class DepartmentController extends Controller
            'department_code'=>'required|string|max:10|unique:departments,department_code,'.$department->id,
             'department_name'=>'required|string|max:255',
         ],[
-            'departmen_code.required'=>'Kode departemen wajib diisi.',
-            'departmen_code.unique'=>'Kode departemen ini sudah terdaftar.',
-            'departmen_name.required'=>'Nama departemen wajib diisi.',
+            'department_code.required'=>'Kode departemen wajib diisi.',
+            'department_code.unique'=>'Kode departemen ini sudah terdaftar.',
+            'department_name.required'=>'Nama departemen wajib diisi.',
         ]);
 
 

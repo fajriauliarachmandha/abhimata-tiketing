@@ -171,15 +171,7 @@
 <script setup>
 import { ref, onBeforeUnmount, computed } from "vue";
 import UserLayout from "../../Layouts/UserLayout.vue";
-import ChipRadioGroup from "../../Components/ChipRadioGroup.vue";
 import { usePage } from "@inertiajs/vue3";
-
-const goBack = () => {
-    window.history.back();
-};
-
-// TODO: ganti dengan data asli dari props/backend
-const departmentName = ref("Departement PPIC");
 
 const categoryOptions = [
     { label: "Hardware", value: "hardware" },
@@ -188,7 +180,6 @@ const categoryOptions = [
     { label: "Printer", value: "printer" },
     { label: "Lain-Lain", value: "lain-lain" },
 ];
-const selectedCategory = ref("");
 
 const urgencyOptions = [
     {
@@ -216,13 +207,8 @@ const urgencyOptions = [
             "peer-checked:bg-red-500 peer-checked:text-white peer-checked:border-red-500",
     },
 ];
-const selectedUrgency = ref("low");
-
-const selectedLocation = ref("");
-const description = ref("");
 
 const fileInput = ref(null);
-const selectedFile = ref(null);
 const previewUrl = ref(null);
 
 const openCamera = () => {
@@ -243,14 +229,13 @@ onBeforeUnmount(() => {
     if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
 });
 
-const submitForm = () => {
-    // TODO: kirim data ke backend via Inertia router.post(...)
-    console.log({
-        category: selectedCategory.value,
-        urgency: selectedUrgency.value,
-        location: selectedLocation.value,
-        description: description.value,
-        file: selectedFile.value,
+const submit = () => {
+    form.post("/user/ticket", {
+        ForceFormData: true,
+        onSuccess: () => {
+            form.reset();
+            previewUrl.value = null;
+        },
     });
 };
 const page = usePage();

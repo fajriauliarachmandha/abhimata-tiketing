@@ -14,14 +14,15 @@ return new class extends Migration
         Schema::create('tickets', function (Blueprint $table) {
             $table->id();
             $table->string('ticket_number')->unique(); //nomer tiket
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('department_id')->constrained('departments');
-            $table->foreignId('category_id')->constrained('categories');
-            $table->enum('priority', ['Low', 'Medium', 'High', 'Critical'])->default('Medium'); //tingkat urgensi
-            $table->text('description'); //deskripsi perbaikan
-            $table->string('attachment')->nullable(); //foto
-            $table->enum('status', ['open','in_progress','done'])->default('open'); //status pengajuan
-            $table->foreignId('assigned_to')->nullable()->constrained('users'); //ID IT Support
+            $table->foreignId('created_by')->constrained('users');
+            $table->foreignId('assigned_to')->nullable()->constrained('users');
+            $table->string('category');
+            $table->string('priority')->nullable();
+            $table->string('description');
+            $table->string('photo')->nullable();
+            $table->string('status')->default('open');
+            $table->timestamp('resolved_at')->nullable();
             $table->timestamps();
         });
     }
