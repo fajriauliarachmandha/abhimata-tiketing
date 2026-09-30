@@ -2,12 +2,17 @@
 
 use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\HomeController;
+use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\User\TicketController;
 use App\Http\Controllers\User\HomeController as UserHomeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+Route::get('/', function () {
+    return redirect()->route('login');
+});
 
 Route::get('/about', function () {
     return Inertia::render('About');
@@ -27,6 +32,9 @@ Route::middleware('auth','it_support')->prefix('admin')->group(function() {
     Route::put('/users/{users}',[UsersController::class,'update'])->name('users.update');
     Route::delete('/users/{users}',[UsersController::class,'destroy'])->name('users.destroy');
     Route::get('/home', [HomeController::class, 'index'])->name('admin.home');
+    Route::get('/ticket', [TicketController::class, 'index'])->name('ticket.index');
+     Route::put('/ticket/{ticket}', [AdminTicketController::class, 'update'])->name('ticket.update');
+    Route::get('/ticket/{ticket}', [AdminTicketController::class, 'show'])->name('ticket.show');
 });
 
 Route::middleware('guest')->group(function () {
@@ -41,12 +49,11 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->prefix('user')->group(function() {
     Route::get('/home', [UserHomeController::class, 'index'])->name('user.home');
     Route::get('/ticket', [TicketController::class, 'index'])->name('ticket.index');
-    Route::get('/ticket', function () {
-        return Inertia::render('User/Ticket');
-    })->name('ticket.create');
+    Route::get('/ticket/create', [TicketController::class, 'create'])->name('ticket.create');
     Route::post('/ticket', [TicketController::class, 'store'])->name('ticket.store');
+    Route::put('/ticket/{ticket}', [TicketController::class, 'update'])->name('ticket.update');
+    Route::get('/ticket/{ticket}', [TicketController::class, 'show'])->name('ticket.show');
 });
-
 // nanti pas udah bikin controller buat tiket, route ini bisa diaktifin lagi
 // Route::middleware('auth')->group(function () {
 //     Route::get('/pengajuantiket', [TicketController::class, 'create'])->name('tickets.create');

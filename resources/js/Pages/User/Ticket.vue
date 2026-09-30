@@ -7,7 +7,7 @@
                 PENGAJUAN TIKET
             </h1>
 
-            <form class="max-w-md mx-auto my-7 px-4">
+            <form @submit.prevent="submit" class="max-w-md mx-auto my-7 px-4">
                 <div class="mb-5">
                     <label
                         for="departement"
@@ -41,7 +41,7 @@
                                 type="radio"
                                 name="kategori_kendala"
                                 :value="item.value"
-                                v-model="selectedCategory"
+                                v-model="form.category"
                                 class="sr-only peer"
                             />
                             <div
@@ -51,36 +51,47 @@
                             </div>
                         </label>
                     </div>
+                    <span
+                        v-if="form.errors.category"
+                        class="text-xs text-red-500 mt-1 block"
+                    >
+                        {{ form.errors.category }}
+                    </span>
                 </div>
 
                 <div class="mb-5">
                     <label
                         class="block mb-2.5 text-sm font-medium text-heading"
                     >
-                        Tingkat Urgensi
+                        Tingkat Prioritas
                     </label>
 
                     <div class="flex flex-wrap gap-2">
                         <label
-                            v-for="item in urgencyOptions"
+                            v-for="item in priorityOptions"
                             :key="item.value"
                             class="cursor-pointer select-none"
                         >
                             <input
                                 type="radio"
-                                name="tingkat_urgensi"
+                                name="tingkat_prioritas"
                                 :value="item.value"
-                                v-model="selectedUrgency"
+                                v-model="form.priority"
                                 class="sr-only peer"
                             />
 
-                            <!-- Chip dengan class aktif dinamis dari item.activeClass -->
                             <div
                                 class="px-4 py-4 text-sm font-medium rounded-full border transition-all duration-200 ease-in-out active:scale-95 bg-gray-100 text-gray-700 border-gray-200 peer-checked:shadow-sm"
                                 :class="item.activeClass"
                             >
                                 {{ item.label }}
                             </div>
+                            <span
+                                v-if="form.errors.priority"
+                                class="text-xs text-red-500 mt-1 block"
+                            >
+                                {{ form.errors.priority }}
+                            </span>
                         </label>
                     </div>
                 </div>
@@ -102,8 +113,6 @@
                         class="hidden"
                         @change="handleFileChange"
                     />
-
-                    <!-- Area Kotak Putus-putus (Dapat Diklik) -->
                     <div
                         @click="openCamera"
                         class="relative w-full h-32 bg-gray-200 border-2 border-dashed border-gray-400 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors overflow-hidden"
@@ -141,6 +150,12 @@
                             <span class="text-xs font-medium">Ambil Foto</span>
                         </div>
                     </div>
+                    <span
+                        v-if="form.errors.photo"
+                        class="text-xs text-red-500 mt-1 block"
+                    >
+                        {{ form.errors.photo }}
+                    </span>
                 </div>
 
                 <div class="mb-5">
@@ -152,9 +167,17 @@
                     <textarea
                         id="deskripsi"
                         rows="4"
+                        name="deskripsi"
+                        v-model="form.description"
                         class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full p-4 shadow-xs placeholder:text-body"
                         placeholder="Jelaskan kendala barang..."
                     ></textarea>
+                    <span
+                        v-if="form.errors.description"
+                        class="text-xs text-red-500 mt-1 block"
+                    >
+                        {{ form.errors.description }}
+                    </span>
                 </div>
 
                 <button
@@ -171,42 +194,49 @@
 <script setup>
 import { ref, onBeforeUnmount, computed } from "vue";
 import UserLayout from "../../Layouts/UserLayout.vue";
-import { usePage } from "@inertiajs/vue3";
+import { useForm, usePage } from "@inertiajs/vue3";
 
 const categoryOptions = [
-    { label: "Hardware", value: "hardware" },
-    { label: "Software", value: "software" },
-    { label: "Jaringan", value: "jaringan" },
-    { label: "Printer", value: "printer" },
-    { label: "Lain-Lain", value: "lain-lain" },
+    { label: "Hardware", value: "Hardware" },
+    { label: "Software", value: "Software" },
+    { label: "Jaringan", value: "Jaringan" },
+    { label: "Printer", value: "Printer" },
+    { label: "Lainnya", value: "Lainnya" },
 ];
 
-const urgencyOptions = [
+const priorityOptions = [
     {
         label: "Low",
-        value: "low",
+        value: "Low",
         activeClass:
             "peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-emerald-500",
     },
     {
         label: "Medium",
-        value: "medium",
+        value: "Medium",
         activeClass:
             "peer-checked:bg-amber-400 peer-checked:text-gray-900 peer-checked:border-amber-400",
     },
     {
         label: "High",
-        value: "high",
+        value: "High",
         activeClass:
             "peer-checked:bg-orange-500 peer-checked:text-white peer-checked:border-orange-500",
     },
     {
         label: "Critical",
-        value: "critical",
+        value: "Critical",
         activeClass:
             "peer-checked:bg-red-500 peer-checked:text-white peer-checked:border-red-500",
     },
 ];
+
+const form = useForm({
+    category: "",
+    priority: "Low",
+    photo: null,
+    description: "",
+});
 
 const fileInput = ref(null);
 const previewUrl = ref(null);
@@ -219,7 +249,7 @@ const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
         if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
-        selectedFile.value = file;
+        form.photo = file;
         previewUrl.value = URL.createObjectURL(file);
     }
 };
@@ -231,7 +261,7 @@ onBeforeUnmount(() => {
 
 const submit = () => {
     form.post("/user/ticket", {
-        ForceFormData: true,
+        forceFormData: true,
         onSuccess: () => {
             form.reset();
             previewUrl.value = null;

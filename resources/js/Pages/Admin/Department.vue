@@ -35,7 +35,7 @@
                 </div>
                 <button
                     type="button"
-                    @click="openAddModal"
+                    @click="openAddDrawer"
                     class="inline-flex items-center justify-center gap-2 shrink-0 text-white bg-primary-500 border border-transparent shadow-xs font-medium text-sm leading-5 rounded-full px-4 py-4 hover:bg-primary-600 focus:outline-none focus:ring-4 focus:ring-brand-medium active:scale-95 transition duration-200 ease-in-out"
                 >
                     <svg
@@ -100,8 +100,8 @@
                             <td class="px-6 py-4 space-x-3">
                                 <button
                                     type="button"
-                                    @click="openUpdateModal(dept)"
-                                    class="font-medium text-fg-brand hover:underline"
+                                    @click="openUpdateDrawer(dept)"
+                                    class="font-medium text-fg-brand hover:underline transition-all duration-200 ease-in-out active:scale-95"
                                 >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -126,7 +126,7 @@
                                 <button
                                     type="button"
                                     @click="handleDelete(dept)"
-                                    class="font-medium text-fg-danger hover:underline"
+                                    class="font-medium text-fg-danger hover:underline transition-all duration-200 ease-in-out active:scale-95"
                                 >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -310,14 +310,14 @@ const form = useForm({
 const editingId = ref(null);
 const isDrawerOpen = ref(false);
 
-const openAddModal = () => {
+const openAddDrawer = () => {
     editingId.value = null;
     form.reset();
     form.clearErrors();
     isDrawerOpen.value = true;
 };
 
-const openUpdateModal = (dept) => {
+const openUpdateDrawer = (dept) => {
     editingId.value = dept.id;
     form.department_code = dept.department_code;
     form.department_name = dept.department_name;

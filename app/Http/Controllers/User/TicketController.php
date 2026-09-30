@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
 
@@ -15,10 +16,10 @@ class TicketController extends Controller
     }
 
     public function store(Request $request){
+
         $validated=$request->validate([
             'category' => 'required|string|in:Hardware,Software,Jaringan,Printer,Lainnya',
             'priority' => 'required|string|in:Low,Medium,High,Critical',
-            'ticket_number' => 'required|unique:tickets',
             'description' => 'required|string',
             'photo' => 'nullable|image|max:5120',
         ]);
@@ -35,7 +36,7 @@ class TicketController extends Controller
         ]);
 
 
-        return redirect()->back()->with('success', 'Ticket created successfully.');
+        return redirect()->route('user.home')->with('success', 'Ticket created successfully.');
     }
 
     private function generateTicketNumber():string
@@ -45,5 +46,25 @@ class TicketController extends Controller
         } while (Ticket::where('ticket_number', $number)->exists());
 
         return $number;
+    }
+
+    public function show(Ticket $ticket)
+    {
+        return Inertia::render('User/TicketDetail', [
+            'ticket' => $ticket
+        ]);
+    }
+
+    public function update(Request $request, Ticket $ticket)
+    {
+        if($ticket->created_by !== Auth::id()){
+            abort(403);
+        }
+
+        $ticket->update([
+            'status' => 'cancelled'
+        ]);
+
+        return redirect()->back()->with('success', 'Ticket berhasil dibatalkan.');
     }
 }
