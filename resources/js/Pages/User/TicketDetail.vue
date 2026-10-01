@@ -113,7 +113,26 @@
                             </h3>
                         </div>
 
-                        <div class="grid gap-4 grid-cols-2 py-2"></div>
+                        <div class="grid gap-4 grid-cols-2 py-2">
+                            <label
+                                v-for="item in categoryOptions"
+                                :key="item.value"
+                                class="cursor-pointer"
+                            >
+                                <input
+                                    type="radio"
+                                    name="kategori_kendala"
+                                    :value="item.value"
+                                    v-model="form.category"
+                                    class="sr-only peer"
+                                />
+                                <div
+                                    class="px-4 py-4 bg-gray-100 text-gray-700 text-sm rounded-full border border-gray-200 transition-all duration-200 ease-in-out active:scale-95 peer-checked:bg-dark peer-checked:text-white peer-checked:border-dark peer-checked:shadow-md peer-checked:scale-[1.02]"
+                                >
+                                    {{ item.label }}
+                                </div>
+                            </label>
+                        </div>
                         <div
                             class="flex justify-end items-center space-x-3 pt-4 mt-2"
                         >

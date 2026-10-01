@@ -1,34 +1,40 @@
 @import "tailwindcss";
 @import "flowbite/src/themes/default";
 @source "../../node_modules/flowbite";
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
 @theme {
+    /* FONT UTAMA (Otomatis dipakai secara default) */
     --font-sans:
-        "Instrument Sans", ui-sans-serif, system-ui, sans-serif,
+        "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif,
         "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
         "Noto Color Emoji";
-    /* Latar Belakang (White Background) */
+
+    /* FONT SEKUNDER (Dipanggil manual pakai class font-secondary) */
+    --font-secondary: "Outfit", ui-sans-serif, system-ui, sans-serif;
+
+    /* Latar Belakang (Standar Base Colors DaisyUI 5 Light) */
     --color-base-100: #ffffff;
-    --color-base-200: #f9fafb;
-    --color-base-300: #f3f4f6;
+    --color-base-200: #f2f2f2;
+    --color-base-300: #e5e6e6;
 
-    /* Hitam (Secondary / Neutral Text) */
-    --color-neutral: #000000;
-    --color-neutral-hover: #1a1a1a;
+    /* Hitam / Gelap (Standar Neutral DaisyUI 5 Light) */
+    --color-neutral: #2b3440;
+    --color-neutral-hover: #1f262e;
 
-    /* Emas (Primary - Disesuaikan dengan warna logo abhimata) */
-    --color-primary-50: #faf7f0;
-    --color-primary-100: #f2eadd;
-    --color-primary-200: #e3d1b4;
-    --color-primary-300: #d3b78a;
-    --color-primary-400: #c29d61;
-    --color-primary-500: #b38f44; /* Warna emas dasar logo */
-    --color-primary-600: #947434; /* Warna emas gelap untuk hover */
-    --color-primary-700: #755b27;
-    --color-primary-800: #59441d;
-    --color-primary-900: #3f3014;
-    --color-primary-950: #21190a;
+    /* Primary - Diadaptasi dari Default Light Theme DaisyUI (#570df8) */
+    --color-primary-50: #f0e6ff;
+    --color-primary-100: #d9b8ff;
+    --color-primary-200: #be8aff;
+    --color-primary-300: #a35cff;
+    --color-primary-400: #882eff;
+    --color-primary-500: #570df8; /* Primary Base DaisyUI */
+    --color-primary-600: #450ac6; /* Primary Hover/Focus DaisyUI */
+    --color-primary-700: #340794;
+    --color-primary-800: #220462;
+    --color-primary-900: #110231;
+    --color-primary-950: #080118;
 }

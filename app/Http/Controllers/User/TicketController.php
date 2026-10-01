@@ -12,7 +12,10 @@ use Illuminate\Support\Str;
 class TicketController extends Controller
 {
     public function index(){
-        return Inertia::render('User/Ticket');
+        $tickets = Ticket::where('created_by', Auth::id())->get();
+        return Inertia::render('User/Ticket', [
+            'tickets' => $tickets
+        ]);
     }
 
     public function store(Request $request){

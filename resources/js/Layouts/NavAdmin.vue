@@ -5,7 +5,7 @@
         >
             <div class="w-full">
                 <div
-                    class="grid max-w-xs grid-cols-2 gap-1 p-1 mx-auto my-2 bg-neutral-tertiary rounded-base"
+                    class="grid max-w-xs grid-cols-3 gap-1 p-1 mx-auto my-2 bg-neutral-tertiary rounded-base"
                     role="group"
                 >
                     <Link
@@ -30,6 +30,17 @@
                     >
                         Departemen
                     </Link>
+                    <Link
+                        href="/admin/history"
+                        class="px-5 py-1.5 text-xs font-medium rounded text-center transition-all duration-200 ease-in-out"
+                        :class="
+                            isActive('/admin/ticket')
+                                ? 'bg-dark-strong text-white'
+                                : 'text-body hover:bg-dark-strong hover:text-white'
+                        "
+                    >
+                        Ticket
+                    </Link>
                 </div>
             </div>
 
@@ -38,28 +49,16 @@
                     href="/admin/home"
                     class="inline-flex flex-col items-center justify-center p-4 hover:bg-neutral-secondary-medium group"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="lucide lucide-house preview-icon"
+                    <HomeSmileAngleIcon
+                        size="24"
+                        class=""
                         :class="
                             isActive('/admin/home')
                                 ? 'text-primary-500'
                                 : 'text-body group-hover:text-primary-600'
                         "
-                    >
-                        <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
-                        <path
-                            d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
-                        />
-                    </svg>
+                    />
+
                     <span class="sr-only">Home</span>
                 </Link>
 
@@ -67,27 +66,15 @@
                     href="/admin/ratings"
                     class="inline-flex flex-col items-center justify-center p-4 hover:bg-neutral-secondary-medium group"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="lucide lucide-star preview-icon"
+                    <StarIcon
+                        size="24"
                         :class="
                             isActive('/admin/ratings')
                                 ? 'text-primary-500'
                                 : 'text-body group-hover:text-primary-600'
                         "
-                    >
-                        <path
-                            d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"
-                        />
-                    </svg>
+                    />
+
                     <span class="sr-only">Rating</span>
                 </Link>
 
@@ -126,27 +113,13 @@
                     @click="isModalOpen = true"
                     class="inline-flex flex-col items-center justify-center p-4 hover:bg-neutral-secondary-medium group"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="lucide lucide-log-out preview-icon text-danger"
-                    >
-                        <path d="m16 17 5-5-5-5" />
-                        <path d="M21 12H9" />
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                    </svg>
+                    <Logout2Icon size="24" class="text-danger" />
 
                     <span class="sr-only">Log-out</span>
                 </button>
             </div>
         </div>
+
         <Teleport to="body">
             <div
                 v-if="isModalOpen"
@@ -238,6 +211,10 @@
 <script setup>
 import { Link, router, usePage } from "@inertiajs/vue3";
 import { ref } from "vue";
+
+import { HomeSmileAngleIcon } from "@solar-icons/vue/bold/home-smile-angle";
+import { StarIcon } from "@solar-icons/vue/bold/star";
+import { Logout2Icon } from "@solar-icons/vue/bold/logout-2";
 
 const page = usePage();
 

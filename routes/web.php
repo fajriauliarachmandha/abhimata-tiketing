@@ -22,19 +22,20 @@ Route::get('/pengajuantiket', function () {
     return Inertia::render('User/PengajuanTiket');
 });
 
-Route::middleware('auth','it_support')->prefix('admin')->group(function() {
-    Route::get('/department',[DepartmentController::class,'index'])->name('departments.index');
-    Route::post('/department',[DepartmentController::class,'store'])->name('departments.store');
-    Route::put('/department/{department}', [DepartmentController::class,'update'])->name('departments.update');
-    Route::delete('/department/{department}', [DepartmentController::class,'destroy'])->name('departments.destroy');
-    Route::get('/users',[UsersController::class,'index'])->name('users.index');
-    Route::post('/users',[UsersController::class,'store'])->name('users.store');
-    Route::put('/users/{users}',[UsersController::class,'update'])->name('users.update');
-    Route::delete('/users/{users}',[UsersController::class,'destroy'])->name('users.destroy');
+Route::middleware(['auth','it_support'])->prefix('admin')->group(function() {
+    Route::get('/department',[DepartmentController::class,'index'])->name('admin.departments.index');
+    Route::post('/department',[DepartmentController::class,'store'])->name('admin.departments.store');
+    Route::put('/department/{department}', [DepartmentController::class,'update'])->name('admin.departments.update');
+    Route::delete('/department/{department}', [DepartmentController::class,'destroy'])->name('admin.departments.destroy');
+    Route::get('/users',[UsersController::class,'index'])->name('admin.users.index');
+    Route::post('/users',[UsersController::class,'store'])->name('admin.users.store');
+    Route::put('/users/{users}',[UsersController::class,'update'])->name('admin.users.update');
+    Route::delete('/users/{users}',[UsersController::class,'destroy'])->name('admin.users.destroy');
     Route::get('/home', [HomeController::class, 'index'])->name('admin.home');
-    Route::get('/ticket', [TicketController::class, 'index'])->name('ticket.index');
-     Route::put('/ticket/{ticket}', [AdminTicketController::class, 'update'])->name('ticket.update');
-    Route::get('/ticket/{ticket}', [AdminTicketController::class, 'show'])->name('ticket.show');
+    // Route::get('/ticket', [TicketController::class, 'index'])->name('ticket.index');
+    Route::put('/ticket/{ticket}', [AdminTicketController::class, 'update'])->name('admin.tickets.update');
+    Route::get('/ticket/{ticket}', [AdminTicketController::class, 'show'])->name('admin.tickets.show');
+    Route::get('/history', [AdminTicketController::class, 'history'])->name('admin.tickets.history');
 });
 
 Route::middleware('guest')->group(function () {
@@ -48,11 +49,11 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware('auth')->prefix('user')->group(function() {
     Route::get('/home', [UserHomeController::class, 'index'])->name('user.home');
-    Route::get('/ticket', [TicketController::class, 'index'])->name('ticket.index');
-    Route::get('/ticket/create', [TicketController::class, 'create'])->name('ticket.create');
-    Route::post('/ticket', [TicketController::class, 'store'])->name('ticket.store');
-    Route::put('/ticket/{ticket}', [TicketController::class, 'update'])->name('ticket.update');
-    Route::get('/ticket/{ticket}', [TicketController::class, 'show'])->name('ticket.show');
+    Route::get('/ticket', [TicketController::class, 'index'])->name('user.ticket.index');
+    Route::get('/ticket/create', [TicketController::class, 'create'])->name('user.ticket.create');
+    Route::post('/ticket', [TicketController::class, 'store'])->name('user.ticket.store');
+    Route::put('/ticket/{ticket}', [TicketController::class, 'update'])->name('user.ticket.update');
+    Route::get('/ticket/{ticket}', [TicketController::class, 'show'])->name('user.ticket.show');
 });
 // nanti pas udah bikin controller buat tiket, route ini bisa diaktifin lagi
 // Route::middleware('auth')->group(function () {

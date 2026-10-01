@@ -71,6 +71,14 @@
                         ticket.description
                     }}</span>
                 </div>
+                <span class="text-xs font-medium px-1.5 py-0.5"
+                    >Teknisi :
+                    {{
+                        ticket.technician
+                            ? ticket.technician.name
+                            : "Belum ada teknisi yang ditugaskan"
+                    }}</span
+                >
 
                 <button
                     v-if="
@@ -79,7 +87,7 @@
                         ticket.status !== 'in progress'
                     "
                     type="button"
-                    @click="processTicket"
+                    @click="isDrawerOpen = true"
                     class="text-white bg-green-600 box-border border border-transparent focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-full text-sm px-4 py-4 focus:outline-none my-4 w-full transition-all duration-200 ease-in-out active:scale-95 cursor-pointer"
                 >
                     Proses Tiket
@@ -91,6 +99,80 @@
                 >
                     Tiket ini sedang diproses.
                 </div>
+
+                <Transition
+                    enter-active-class="transition ease-out duration-200"
+                    enter-from-class="opacity-0 scale-95"
+                    enter-to-class="opacity-100 scale-100"
+                    leave-active-class="transition ease-in duration-150"
+                    leave-from-class="opacity-100 scale-100"
+                    leave-to-class="opacity-0 scale-95"
+                >
+                    <div
+                        v-if="isDrawerOpen"
+                        id="drawer-bottom-example"
+                        class="fixed bottom-0 inset-x-0 mx-auto z-[100] w-full max-w-md px-4 pb-4 pt-3 overflow-y-auto transition-transform bg-neutral-primary-soft transform-none rounded-t-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-default"
+                        tabindex="-1"
+                        aria-labelledby="drawer-bottom-label"
+                    >
+                        <div class="flex justify-between pb-2 items-center">
+                            <h3 class="text-lg font-medium text-heading">
+                                Pilih Teknisi untuk memproses tiket ini
+                            </h3>
+                        </div>
+
+                        <div class="grid gap-4 py-2">
+                            <label
+                                v-for="teknisi in technician"
+                                :key="teknisi.id"
+                                class="cursor-pointer"
+                            >
+                                <input
+                                    type="radio"
+                                    name="teknisi"
+                                    :value="teknisi.id"
+                                    v-model="form.assigned_to"
+                                    class="sr-only peer"
+                                    @change="errorMessage = ''"
+                                />
+                                <div
+                                    class="px-4 py-4 bg-gray-100 text-gray-700 text-sm rounded-full border border-gray-200 transition-all duration-200 ease-in-out active:scale-95 peer-checked:bg-dark peer-checked:text-white peer-checked:border-dark peer-checked:shadow-md peer-checked:scale-[1.02]"
+                                >
+                                    {{ teknisi.name }}
+                                </div>
+                            </label>
+                        </div>
+                        <div
+                            v-if="errorMessage"
+                            class="text-red-500 text-sm mb-2"
+                        >
+                            {{ errorMessage }}
+                        </div>
+                        <div
+                            class="flex justify-end items-center space-x-3 pt-4 mt-2"
+                        >
+                            <button
+                                type="button"
+                                @click="processTicket"
+                                :disabled="form.processing"
+                                class="inline-flex items-center text-white bg-green-600 hover:bg-green-700 font-medium rounded-full text-sm px-5 py-2.5 transition-all duration-200 cursor-pointer"
+                            >
+                                {{
+                                    form.processing
+                                        ? "Memproses..."
+                                        : "Ya, Proses"
+                                }}
+                            </button>
+                            <button
+                                type="button"
+                                @click="isDrawerOpen = false"
+                                class="text-gray-700 bg-gray-100 hover:bg-gray-200 font-medium rounded-full text-sm px-5 py-2.5 transition-all duration-200 cursor-pointer"
+                            >
+                                Tidak
+                            </button>
+                        </div>
+                    </div>
+                </Transition>
             </form>
         </main></AdminLayout
     >
@@ -98,14 +180,12 @@
 
 <script setup>
 import { ref, computed } from "vue";
-import { useForm, usePage } from "@inertiajs/vue3";
+import { router, useForm, usePage } from "@inertiajs/vue3";
 import AdminLayout from "../../Layouts/AdminLayout.vue";
 
 const form = useForm({
-    category: "",
-    priority: "Low",
-    photo: null,
-    description: "",
+    status: "in progress",
+    assigned_to: "",
 });
 
 const submit = () => {
@@ -119,6 +199,7 @@ const submit = () => {
 };
 const props = defineProps({
     ticket: Object,
+    technician: Array,
 });
 const page = usePage();
 const user = computed(() => page.props.auth.user);
@@ -138,12 +219,17 @@ const getPriorityClass = (priority) => {
 };
 
 const isDrawerOpen = ref(false);
+const errorMessage = ref("");
 
 const processTicket = () => {
+    if (!form.assigned_to) {
+        errorMessage.value("Silakan pilih teknisi sebelum memproses tiket.");
+        return;
+    }
     form.put(`/admin/ticket/${props.ticket.id}`, {
         onSuccess: () => {
             isDrawerOpen.value = false;
-            window.location.href = "/admin/home";
+            router.visit("/admin/home");
         },
     });
 };

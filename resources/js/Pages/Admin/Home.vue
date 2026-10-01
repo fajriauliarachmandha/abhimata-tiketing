@@ -6,16 +6,18 @@
                     :src="avatarUrl"
                     alt="avatar"
                     id="avatar"
-                    class="w-12 h-12 rounded-full cursor-pointer ring-2 p-1 ring-green-500"
+                    class="w-10 h-10 rounded-full cursor-pointer ring-2 ring-green-500"
                 />
 
                 <div class="flex flex-col">
-                    <div
-                        class="font-semibold text-lg text-heading leading-tight"
-                    >
-                        <div>Hallo, {{ user.name }}</div>
+                    <div class="leading-tight">
                         <div
-                            class="text-sm font-normal text-body leading-tight"
+                            class="font-bold text-sm text-heading leading-tight"
+                        >
+                            Hallo, {{ user.name }}
+                        </div>
+                        <div
+                            class="text-xs font-normal font-secondary text-body leading-tight"
                         >
                             {{
                                 user.role === "department"
@@ -24,34 +26,36 @@
                             }}
                         </div>
                         <span
-                            class="inline-flex items-center gap-1 bg-brand-softer text-fg-brand-strong text-xs font-medium px-1.5 py-0.5 rounded"
+                            class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 text-xs font-medium px-1.5 py-0.5 rounded-full font-secondary"
                         >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="10"
-                                height="10"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="lucide lucide-star preview-icon shrink-0"
-                            >
-                                <path
-                                    d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"
-                                />
-                            </svg>
+                            <StarIcon size="12" />
                             17 Stars
                         </span>
                     </div>
                 </div>
             </div>
 
+            <div class="sticky top-0 z-10 bg-white flex gap-2 py-2 -mx-4 px-4">
+                <button
+                    v-for="status in statusFilter"
+                    :key="status.value"
+                    type="button"
+                    @click="activeFilter = status.value"
+                    class="px-2 py-2 font-light text-xs font-secondary rounded-full transition-all duration-200 ease-in-out active:scale-95"
+                    :class="
+                        activeFilter === status.value
+                            ? 'bg-dark text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    "
+                >
+                    {{ status.label }}
+                </button>
+            </div>
+
             <div
-                class="pt-6 pb-4 font-semibold text-lg text-heading leading-tight"
+                class="pt-4 pb-4 font-semibold text-lg text-heading leading-tight"
             >
-                Riwayat Perbaikan
+                Daftar Order
             </div>
 
             <ul role="list" class="max-w-md divide-y divide-default">
@@ -59,42 +63,70 @@
                     v-if="!tickets || tickets.length === 0"
                     class="py-6 text-center text-sm text-body"
                 >
-                    Belum ada riwayat perbaikan.
+                    Belum ada perbaikan.
                 </li>
                 <Link
-                    v-for="ticket in tickets"
+                    v-for="ticket in filteredTickets"
                     :key="ticket.id"
                     :href="`/admin/ticket/${ticket.id}`"
                     class=""
                 >
                     <div
-                        class="flex items-center space-x-3 rtl:space-x-reverse py-2"
+                        class="flex flex-col gap-3 bg-gray-200 rounded-base border border-primary-200 px-4 py-4"
                     >
-                        <div class="flex-1 min-w-0 flex flex-col gap-1">
-                            <p
-                                class="text-sm font-semibold text-heading truncate"
-                            >
-                                {{ ticket.category }}
-                            </p>
-                            <span class="text-xs font-medium px-1.5 py-0.5">{{
-                                ticket.description
-                            }}</span>
-                            <span
-                                class="bg-warning-soft text-fg-danger text-xs font-medium px-1.5 py-0.5 rounded w-fit"
-                                :class="getPriorityClass(ticket.priority)"
-                                >Priortas: {{ ticket.priority }}</span
-                            >
+                        <div class="items-start">
+                            <div class="flex justify-between">
+                                <p
+                                    class="text-sm font-semibold text-heading truncate"
+                                >
+                                    Kategori: {{ ticket.category }}
+                                </p>
+                                <span
+                                    class="inline-flex items-center border text-xs font-medium px-1.5 py-0.5 rounded-full shrink-0"
+                                    :class="getStatusClass(ticket.status)"
+                                >
+                                    <span
+                                        class="w-2 h-2 me-1 rounded-full animate-pulse"
+                                        :class="getDotClass(ticket.status)"
+                                    ></span>
+                                    {{ ticket.status }}
+                                </span>
+                            </div>
+
+                            <div class="flex-1 min-w-0 flex flex-col gap-1">
+                                <span
+                                    class="text-xs font-medium px-1.5 py-0.5"
+                                    >{{ ticket.description }}</span
+                                >
+                                <span
+                                    class="bg-warning-soft text-fg-danger text-xs font-medium px-1.5 py-0.5 rounded-full w-fit"
+                                    :class="getPriorityClass(ticket.priority)"
+                                    >Priortas: {{ ticket.priority }}</span
+                                >
+                            </div>
                         </div>
-                        <span
-                            class="inline-flex items-center border text-xs font-medium px-1.5 py-0.5 rounded-sm"
-                            :class="getStatusClass(ticket.status)"
+
+                        <div
+                            class="w-full py-1 pr-1 pl-4 flex justify-between items-center bg-white rounded-full"
                         >
-                            <span
-                                class="w-2 h-2 me-1 rounded-full"
-                                :class="getDotClass(ticket.status)"
-                            ></span>
-                            {{ ticket.status }}
-                        </span>
+                            <span class="text-xs font-medium text-gray-700">
+                                Teknisi:
+                                {{
+                                    ticket.technician
+                                        ? ticket.technician.name
+                                        : "Belum ada teknisi"
+                                }}
+                                <br />
+                                {{ ticket.ticket_number }}
+                            </span>
+
+                            <button
+                                type="button"
+                                class="w-fit text-white bg-primary-500 box-border border border-transparent hover:bg-primary-600 focus:ring-4 focus:ring-primary-600 shadow-xs font-medium leading-5 rounded-full text-sm px-4 py-1.5 focus:outline-none transition-all duration-200 ease-in-out active:scale-95"
+                            >
+                                Proses
+                            </button>
+                        </div>
                     </div>
                 </Link>
             </ul>
@@ -106,9 +138,10 @@
 import { computed, ref } from "vue";
 import AdminLayout from "../../Layouts/AdminLayout.vue";
 import { usePage, Link } from "@inertiajs/vue3";
+import { StarIcon } from "@solar-icons/vue/bold/star";
 const randomSeed = ref(Math.random().toString(36).substring(2, 10));
 const avatarUrl = ref(
-    `https://api.dicebear.com/10.x/loops/svg?tags=animation&seed=${randomSeed.value}`,
+    `https://api.dicebear.com/10.x/sprouts/svg?tags=animation&seed=${randomSeed.value}`,
 );
 const page = usePage();
 const user = computed(() => page.props.auth.user);
@@ -135,7 +168,7 @@ const getStatusClass = (status) => {
             return "bg-gray-100 text-gray-800 border border-gray-300";
         case "accepted":
             return "bg-green-100 text-green-800 border border-green-300";
-        case "in_progress":
+        case "in progress":
             return "bg-amber-100 text-amber-800 border border-amber-300";
         case "done":
             return "bg-green-100 text-green-800 border border-green-300";
@@ -150,7 +183,7 @@ const getDotClass = (status) => {
         case "accepted":
         case "done":
             return "bg-green-500";
-        case "in_progress":
+        case "in progress":
             return "bg-amber-500";
         case "cancelled":
             return "bg-red-500";
@@ -158,4 +191,22 @@ const getDotClass = (status) => {
             return "bg-gray-400";
     }
 };
+
+const statusFilter = [
+    { label: "Semua", value: "all" },
+    { label: "Open", value: "open" },
+    { label: "Di Proses", value: "in progress" },
+    { label: "Selesai", value: "done" },
+];
+
+const activeFilter = ref("all");
+
+const filteredTickets = computed(() => {
+    if (activeFilter.value === "all") {
+        return props.tickets;
+    }
+    return props.tickets.filter(
+        (ticket) => ticket.status === activeFilter.value,
+    );
+});
 </script>
