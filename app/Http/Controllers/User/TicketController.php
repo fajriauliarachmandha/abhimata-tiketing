@@ -12,9 +12,8 @@ use Illuminate\Support\Str;
 class TicketController extends Controller
 {
     public function index(){
-        $tickets = Ticket::where('created_by', Auth::id())->get();
         return Inertia::render('User/Ticket', [
-            'tickets' => $tickets
+            'tickets' => Ticket::where('created_by', Auth::id())->with(['department', 'creator', 'technician'])->latest()->get()
         ]);
     }
 
@@ -36,6 +35,7 @@ class TicketController extends Controller
             'ticket_number' => $this->generateTicketNumber(),
             'department_id' => $request->user()->department_id,
             'created_by' => $request->user()->id,
+            'eta' => now()->addDays()
         ]);
 
 
@@ -54,7 +54,7 @@ class TicketController extends Controller
     public function show(Ticket $ticket)
     {
         return Inertia::render('User/TicketDetail', [
-            'ticket' => $ticket
+            'ticket' => $ticket->load('creator', 'department', 'technician')
         ]);
     }
 

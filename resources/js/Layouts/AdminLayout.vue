@@ -3,9 +3,11 @@
         class="min-h-screen bg-gray-100 flex justify-center font-sans text-gray-900"
     >
         <div
-            class="w-full max-w-md bg-white min-h-screen shadow-2xl relative flex flex-col"
+            class="w-full max-w-md lg:max-w-7xl bg-white min-h-screen shadow-2xl relative flex flex-col"
         >
-            <main class="flex-1 p-4 pb-32">
+            <TopNav />
+
+            <main class="flex-1 px-4 pt-20 pb-32">
                 <div class="overflow-hidden">
                     <Transition
                         mode="out-in"
@@ -22,12 +24,10 @@
                     </Transition>
                 </div>
             </main>
-
-            <NavAdmin />
         </div>
     </div>
 </template>
 
 <script setup>
-import NavAdmin from "./NavAdmin.vue";
+import TopNav from "./TopNav.vue";
 </script>

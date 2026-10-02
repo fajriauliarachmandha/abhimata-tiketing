@@ -18,7 +18,13 @@ class Ticket extends Model
         'priority',
         'description',
         'photo',
-        'status'
+        'status',
+        'eta',
+    ];
+
+    protected $casts = [
+        'eta' => 'datetime',
+        'resolved_at' => 'datetime',
     ];
 
     public function department()

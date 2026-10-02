@@ -62,13 +62,16 @@
                                 Kategori
                             </th>
                             <th scope="col" class="px-6 py-3 font-medium">
-                                prioritas
+                                Prioritas
+                            </th>
+                            <th scope="col" class="px-6 py-3 font-medium">
+                                Deskripsi
                             </th>
                             <th scope="col" class="px-6 py-3 font-medium">
                                 Foto
                             </th>
                             <th scope="col" class="px-6 py-3 font-medium">
-                                status
+                                Status
                             </th>
                             <th scope="col" class="px-6 py-3 font-medium">
                                 Tanggal Selesai
@@ -80,7 +83,7 @@
                     </thead>
                     <tbody>
                         <tr
-                            v-for="tickets in filteredTickets"
+                            v-for="tickets in paginatedTickets"
                             :key="tickets.id"
                             class="bg-neutral-primary-soft border-b border-default hover:bg-neutral-secondary-medium"
                         >
@@ -118,15 +121,21 @@
                             >
                                 {{ tickets.priority }}
                             </td>
-                            <td
-                                class="px-6 py-4 font-semibold text-heading whitespace-nowrap"
-                            >
-                                {{ tickets.description }}
+                            <td class="px-6 py-4 border-b border-default">
+                                <div
+                                    class="font-semibold text-heading whitespace-normal line-clamp-2 w-64"
+                                >
+                                    {{ tickets.description }}
+                                </div>
                             </td>
                             <td
                                 class="px-6 py-4 font-semibold text-heading whitespace-nowrap"
                             >
-                                {{ tickets.photo }}
+                                <img
+                                    :src="`/storage/${tickets.photo}`"
+                                    class="w-full h-full object-contain"
+                                    alt="Preview Foto"
+                                />
                             </td>
                             <td
                                 class="px-6 py-4 font-semibold text-heading whitespace-nowrap"
@@ -136,15 +145,15 @@
                             <td
                                 class="px-6 py-4 font-semibold text-heading whitespace-nowrap"
                             >
-                                {{ tickets.resolved_at }}
+                                {{ formatDate(tickets.resolved_at) }}
                             </td>
                             <td
                                 class="px-6 py-4 font-semibold text-heading whitespace-nowrap"
                             >
-                                {{ tickets.created_at }}
+                                {{ formatDate(tickets.created_at) }}
                             </td>
                         </tr>
-                        <tr v-if="filteredTickets.length === 0">
+                        <tr v-if="paginatedTickets.length === 0">
                             <td
                                 colspan="3"
                                 class="px-6 py-4 text-center text-body"
@@ -155,12 +164,82 @@
                     </tbody>
                 </table>
             </div>
+            <div class="flex flex-col items-center pt-5">
+                <span class="text-sm text-body">
+                    Menampilkan Halaman
+                    <span class="font-semibold text-heading">
+                        {{ currentPage }}</span
+                    >
+                    dari
+                    <span class="font-semibold text-heading">{{
+                        filteredTickets.length
+                    }}</span>
+                    Data
+                </span>
+                <!-- Buttons -->
+                <div class="inline-flex mt-4 -space-x-px">
+                    <!-- Previous Button -->
+                    <button
+                        type="button"
+                        @click="prevPage"
+                        :disabled="currentPage === 1"
+                        class="inline-flex items-center text-body bg-neutral-secondary-medium border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading shadow-xs font-medium leading-5 rounded-s-base text-sm px-3 py-2 focus:outline-none"
+                    >
+                        <svg
+                            class="w-4 h-4 me-1.5 -ms-0.5 rtl:rotate-180"
+                            aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke="currentColor"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M5 12h14M5 12l4-4m-4 4 4 4"
+                            />
+                        </svg>
+                        Previous
+                    </button>
+                    <!-- Next Button -->
+                    <button
+                        type="button"
+                        @click="nextPage"
+                        :disabled="
+                            currentPage === totalPages || totalPages === 0
+                        "
+                        class="inline-flex items-center text-body bg-neutral-secondary-medium border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading shadow-xs font-medium leading-5 rounded-e-base text-sm px-3 py-2 focus:outline-none"
+                    >
+                        Next
+                        <svg
+                            class="w-4 h-4 ms-1.5 -me-0.5 rtl:rotate-180"
+                            aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke="currentColor"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M19 12H5m14 0-4 4m4-4-4-4"
+                            />
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </main>
     </AdminLayout>
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 import AdminLayout from "../../Layouts/AdminLayout.vue";
 
@@ -178,15 +257,55 @@ const filteredTickets = computed(() => {
     const q = searchQuery.value.toLowerCase();
     return props.tickets.filter(
         (ticket) =>
-            ticket.ticket_number.toLowerCase().includes(q) ||
-            ticket.department_id.toLowerCase().includes(q) ||
-            ticket.created_by.toLowerCase().includes(q) ||
-            ticket.assigned_to.toLowerCase().includes(q) ||
-            ticket.category.toLowerCase().includes(q) ||
-            ticket.description.toLowerCase().includes(q) ||
-            ticket.photo.toLowerCase().includes(q) ||
-            ticket.status.toLowerCase().includes(q) ||
-            ticket.resolved.toLowerCase().includes(q),
+            ticket.department?.department_name?.toLowerCase().includes(q) ||
+            ticket.creator?.name?.toLowerCase().includes(q) ||
+            ticket.technician?.name?.toLowerCase().includes(q) ||
+            ticket.category?.toLowerCase().includes(q) ||
+            ticket.status?.toLowerCase().includes(q),
     );
 });
+
+const formatDate = (dateString) => {
+    if (!dateString) {
+        return "-";
+    }
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("id-ID", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    }).format(date);
+};
+
+// pagination
+const currentPage = ref(1);
+const itemsPerPage = ref(10);
+
+watch(searchQuery, () => {
+    currentPage.value = 1; // Reset to first page on search
+});
+
+const totalPages = computed(() => {
+    return Math.ceil(filteredTickets.value.length / itemsPerPage.value);
+});
+
+const paginatedTickets = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage.value;
+    const end = start + itemsPerPage.value;
+    return filteredTickets.value.slice(start, end);
+});
+
+const nextPage = () => {
+    if (currentPage.value < totalPages.value) {
+        currentPage.value++;
+    }
+};
+
+const prevPage = () => {
+    if (currentPage.value > 1) {
+        currentPage.value--;
+    }
+};
 </script>

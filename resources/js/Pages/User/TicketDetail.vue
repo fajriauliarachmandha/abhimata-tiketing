@@ -72,6 +72,13 @@
                     }}</span>
                 </div>
 
+                <span
+                    v-if="getEtaStatus(ticket)"
+                    class="text-xs font-medium text-red-600 bg-red-50 px-1.5 py-0.5 rounded-full w-fit"
+                >
+                    {{ getEtaStatus(ticket) }}
+                </span>
+
                 <button
                     v-if="
                         ticket.status !== 'cancelled' &&
@@ -208,5 +215,26 @@ const cancelTicket = () => {
             window.location.href = "/user/home";
         },
     });
+};
+
+const getEtaStatus = (ticket) => {
+    if (
+        !ticket.eta ||
+        ticket.status === "resolved" ||
+        ticket.status === "cancelled" ||
+        ticket.status === "done"
+    ) {
+        return null;
+    }
+
+    const eta = new Date(ticket.eta);
+    const now = new Date();
+    const diffInMs = now - eta;
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    if (diffInDays < 1) {
+        return null;
+    }
+    return `lebih lambat ${diffInDays} jam`;
 };
 </script>

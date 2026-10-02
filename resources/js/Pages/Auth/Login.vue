@@ -1,126 +1,86 @@
 <template>
-    <div
-        class="min-h-screen bg-gray-100 flex justify-center font-sans text-gray-900"
-    >
-        <div
-            class="w-full max-w-md bg-white min-h-screen shadow-2xl relative flex flex-col"
+    <main class="bg-gray-50 px-4 md:px-8">
+        <Transition
+            mode="out-in"
+            enter-active-class="transition duration-200 ease-out"
+            enter-from-class="opacity-0 translate-x-2"
+            enter-to-class="opacity-100 translate-x-0"
+            leave-active-class="transition duration-150 ease-in"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
         >
-            <main
-                class="flex-1 p-4 flex flex-col items-center justify-center overflow-hidden"
-            >
-                <Transition
-                    mode="out-in"
-                    enter-active-class="transition duration-200 ease-out"
-                    enter-from-class="opacity-0 translate-x-2"
-                    enter-to-class="opacity-100 translate-x-0"
-                    leave-active-class="transition duration-150 ease-in"
-                    leave-from-class="opacity-100"
-                    leave-to-class="opacity-0"
-                >
-                    <div
-                        :key="$page.url"
-                        class="flex flex-col items-center w-full"
-                    >
-                        <img
-                            class="h-44 w-44"
+            <div class="min-h-screen flex flex-col items-center justify-center">
+                <div class="max-w-md w-full">
+                    <a href="#"
+                        ><img
                             src="/public/abhimata-logo.webp"
-                            alt="image description"
+                            alt="logo"
+                            class="w-20 min-h-20 mb-4 mx-auto block"
                         />
-                        <form
-                            @submit.prevent="submit"
-                            class="max-w-sm mx-auto w-full py-6"
+                    </a>
+
+                    <div
+                        class="p-6 rounded-lg bg-white border border-slate-300 shadow-xs md:p-8"
+                    >
+                        <h1
+                            class="text-slate-900 text-center text-3xl font-bold"
                         >
-                            <label
-                                for="input-group-1"
-                                class="block mb-2.5 text-sm font-medium text-heading"
-                                >Username</label
-                            >
-                            <div class="relative">
-                                <div
-                                    class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none"
+                            Login
+                        </h1>
+
+                        <form @submit.prevent="submit" class="space-y-6 mt-10">
+                            <div>
+                                <label
+                                    for="username"
+                                    class="mb-2 text-slate-900 font-medium text-sm inline-block"
+                                    >Username</label
                                 >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="20"
-                                        height="20"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="#000"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        class="lucide lucide-circle-user-round preview-icon"
-                                    >
-                                        <path
-                                            d="M17.925 20.056a6 6 0 0 0-11.851.001"
-                                        />
-                                        <circle cx="12" cy="11" r="4" />
-                                        <circle cx="12" cy="12" r="10" />
-                                    </svg>
-                                </div>
                                 <input
                                     type="text"
-                                    id="input-group-1"
                                     v-model="form.username"
-                                    class="block w-full ps-9 pe-3 py-4 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body transition-all duration-200 ease-in-out"
-                                    placeholder="Username . . ."
+                                    id="username"
+                                    name="username"
+                                    placeholder="Username"
+                                    required
+                                    class="px-3 py-2.5 text-sm text-slate-900 rounded-md bg-white w-full outline-1 -outline-offset-1 outline-slate-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600"
                                 />
-                            </div>
-                            <span
-                                v-if="form.errors.username"
-                                class="text-red-500 text-sm block mt-1"
-                            >
-                                {{ form.errors.username }}
-                            </span>
-
-                            <label
-                                for="input-group-1"
-                                class="block mb-2.5 text-sm font-medium text-heading mt-4"
-                                >Password</label
-                            >
-                            <div class="relative">
-                                <div
-                                    class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none"
+                                <span
+                                    v-if="form.errors.username"
+                                    class="text-red-500 text-sm block mt-1"
                                 >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="20"
-                                        height="20"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="#000"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        class="lucide lucide-eye preview-icon"
-                                    >
-                                        <path
-                                            d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"
-                                        />
-                                        <circle cx="12" cy="12" r="3" />
-                                    </svg>
-                                </div>
+                                    {{ form.errors.username }}
+                                </span>
+                            </div>
+                            <div>
+                                <label
+                                    for="password"
+                                    class="mb-2 text-slate-900 font-medium text-sm inline-block"
+                                    >Password</label
+                                >
                                 <input
                                     type="password"
-                                    id="input-group-1"
                                     v-model="form.password"
-                                    class="block w-full ps-9 pe-3 py-4 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body transition-all duration-200 ease-in-out"
-                                    placeholder="Password . . ."
+                                    id="password"
+                                    name="password"
+                                    placeholder="••••••••"
+                                    required
+                                    class="px-3 py-2.5 text-sm text-slate-900 rounded-md bg-white w-full outline-1 -outline-offset-1 outline-slate-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600"
                                 />
                             </div>
+
                             <button
-                                type="submit"
                                 :disabled="form.processing"
-                                class="text-white bg-primary-500 hover:bg-primary-600 focus:ring-4 focus:ring-primary-300 font-medium rounded-full text-sm px-5 py-4 focus:outline-none w-full mt-5 transition-all duration-200 ease-in-out active:scale-95"
+                                type="submit"
+                                class="w-full py-2 px-3.5 text-sm rounded-full font-semibold cursor-pointer tracking-wide text-white bg-primary-500 hover:bg-primary-600 focus:ring-4 focus:ring-primary-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 transition-all duration-200 ease-in-out active:scale-95"
                             >
                                 {{ form.processing ? "Masuk..." : "Masuk" }}
                             </button>
                         </form>
                     </div>
-                </Transition>
-            </main>
-        </div>
-    </div>
+                </div>
+            </div>
+        </Transition>
+    </main>
 </template>
 
 <script setup>

@@ -11,9 +11,13 @@ use Inertia\Inertia;
 
 class TicketController extends Controller
 {
-    public function history()
+    public function history(Ticket $tickets)
     {
-        return Inertia::render('Admin/History',['tickets' => Ticket::with('department','users')->latest()->get() ]);
+        $tickets = Ticket::with(['creator', 'department', 'technician'])
+            ->latest()->get();
+        return Inertia::render('Admin/History',[
+            'tickets'=>$tickets
+        ]);
     }
 
     public function show(Ticket $ticket)
