@@ -1,6 +1,6 @@
 <template>
-    <AdminLayout>
-        <main class="py-2 pb-32">
+    <TopNav>
+        <main class="px-4 pt-20 pb-6 lg:ms-64 lg:pt-24">
             <h1
                 class="text-base font-bold tracking-wide text-gray-900 uppercase"
             >
@@ -213,14 +213,14 @@
                     </p>
                 </li>
             </ol>
-        </main></AdminLayout
-    >
+        </main>
+    </TopNav>
 </template>
 
 <script setup>
 import { ref, computed } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3";
-import AdminLayout from "../../Layouts/AdminLayout.vue";
+import TopNav from "../../Layouts/TopNav.vue";
 
 const form = useForm({
     status: "in progress",

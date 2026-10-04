@@ -14,6 +14,10 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+Route::get('/welcome', function () {
+    return Inertia::render('Welcome');
+});
+
 Route::get('/about', function () {
     return Inertia::render('About');
 });

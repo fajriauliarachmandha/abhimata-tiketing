@@ -1,6 +1,6 @@
 <template>
     <TopNav />
-    <main class="py-2 lg:py-6 lg:max-w-7xl lg:mx-auto lg:pt-20">
+    <main class="px-4 pt-20 pb-6 lg:ms-64 lg:pt-24">
         <!-- Header: profil (kiri) + filter (kanan di laptop) -->
         <div class="lg:flex lg:items-center lg:justify-between lg:gap-6">
             <div class="flex items-center gap-2.5 ps-0.5">
@@ -36,7 +36,7 @@
 
             <!-- Filter: sticky di HP, biasa di laptop -->
             <div
-                class="sticky top-[72px] z-10 bg-white flex gap-2 py-2 -mx-4 px-4 overflow-x-auto lg:static lg:mx-0 lg:px-0 lg:py-0 lg:overflow-visible"
+                class="sticky top-[72px] z-10 flex gap-2 py-2 -mx-4 px-4 overflow-x-auto lg:static lg:mx-0 lg:px-0 lg:py-0 lg:overflow-visible"
             >
                 <button
                     v-for="status in statusFilter"
@@ -47,7 +47,7 @@
                     :class="
                         activeFilter === status.value
                             ? 'bg-dark text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-200'
                     "
                 >
                     {{ status.label }}
@@ -76,7 +76,7 @@
             <li v-for="ticket in filteredTickets" :key="ticket.id">
                 <Link :href="`/admin/ticket/${ticket.id}`" class="block h-full">
                     <div
-                        class="flex flex-col justify-between gap-3 h-full bg-gray-200 rounded-base border border-primary-200 px-4 py-4 my-1 lg:my-0 lg:hover:shadow-md lg:hover:border-primary-400 transition"
+                        class="flex flex-col justify-between gap-3 h-full bg-white rounded-base border border-dark px-4 py-4 my-1 lg:my-0 lg:hover:shadow-md lg:hover:border-dark-backdrop transition"
                     >
                         <div class="items-start">
                             <div class="flex justify-between gap-2">
@@ -121,7 +121,7 @@
                         </div>
 
                         <div
-                            class="w-full py-1 pr-1 pl-4 flex justify-between items-center bg-white rounded-full"
+                            class="w-full py-1 pr-1 pl-4 flex justify-between items-center bg-gray-100 rounded-full"
                         >
                             <span class="text-xs font-medium text-gray-700">
                                 Teknisi:

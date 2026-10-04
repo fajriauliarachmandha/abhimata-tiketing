@@ -1,135 +1,119 @@
 <template>
-    <MobileLayout>
-        <main class="p-6">
-            <div class="flex items-center gap-2.5 justify-between">
-                <div class="font-medium text-heading">
-                    <div>Hallo, { user }</div>
-                    <div class="text-sm font-normal text-body">
-                        Departemen IT Support
-                    </div>
-                </div>
-
-                <img
-                    id="avatarButton"
-                    type="button"
-                    data-dropdown-toggle="userDropdown"
-                    data-dropdown-placement="bottom-start"
-                    class="w-10 h-10 rounded-full cursor-pointer"
-                    src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
-                    alt="User dropdown"
-                />
-
-                <!-- Dropdown menu -->
-                <div
-                    id="userDropdown"
-                    class="z-10 hidden bg-neutral-primary-medium border border-default-medium rounded-base shadow-lg w-44"
-                >
-                    <ul
-                        class="p-2 text-sm text-body font-medium"
-                        aria-labelledby="avatarButton"
-                    >
-                        <li>
-                            <a
-                                href="#"
-                                class="block w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded-md"
-                                >Profile</a
-                            >
-                        </li>
-                        <li>
-                            <a
-                                href="#"
-                                class="block w-full p-2 hover:bg-neutral-tertiary-medium text-fg-danger rounded-md"
-                                >Sign out</a
-                            >
-                        </li>
-                    </ul>
+    <div
+        class="relative w-full max-w-sm overflow-hidden rounded-2xl bg-white p-5 shadow-lg"
+    >
+        <!-- Header: maskapai + tipe -->
+        <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+                <div class="leading-tight">
+                    <p class="text-[11px] text-gray-400">Departemen</p>
+                    <p class="text-sm font-semibold text-gray-900">
+                        Human Resource General Affair
+                    </p>
                 </div>
             </div>
-            <button
-                type="button"
-                class="inline-flex items-center text-white bg-warning box-border border border-transparent hover:bg-warning-strong focus:ring-4 focus:ring-warning-medium shadow-xs font-medium leading-5 rounded-full text-sm px-4 py-2.5 focus:outline-none w-full my-5"
-            >
-                Ajukan Perbaikan
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-wrench preview-icon"
-                >
-                    <path
-                        d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z"
-                    />
-                </svg>
-            </button>
+            <div class="text-end leading-tight">
+                <p class="text-[11px] text-gray-400">Status</p>
+                <p class="text-sm font-semibold text-yellow-500">Diproses</p>
+            </div>
+        </div>
 
-            <ul role="list" class="max-w-md divide-y divide-default">
-                <li class="py-3 sm:py-4">
-                    <div
-                        class="flex items-center space-x-3 rtl:space-x-reverse"
-                    >
-                        <div class="flex-1 min-w-0">
-                            <p
-                                class="text-sm font-semibold text-heading truncate"
-                            >
-                                Departemen PPIC
-                            </p>
-                            <p class="text-sm text-body truncate">
-                                Ruangan P-1
-                            </p>
-                            <span
-                                class="bg-warning-soft text-fg-danger text-xs font-medium px-1.5 py-0.5 rounded"
-                                >Critical</span
-                            >
-                        </div>
-                        <span
-                            class="inline-flex items-center bg-success-soft border border-success-subtle text-fg-success-strong text-xs font-medium px-1.5 py-0.5 rounded-sm"
-                        >
-                            <span
-                                class="w-2 h-2 me-1 bg-success rounded-full"
-                            ></span>
-                            Sudah Selesai
-                        </span>
-                    </div>
-                </li>
-                <li class="py-3 sm:py-4">
-                    <div
-                        class="flex items-center space-x-3 rtl:space-x-reverse"
-                    >
-                        <div class="flex-1 min-w-0">
-                            <p
-                                class="text-sm font-semibold text-heading truncate"
-                            >
-                                Departemen Finance
-                            </p>
-                            <p class="text-sm text-body truncate">
-                                Ruangan F-2
-                            </p>
-                            <span
-                                class="bg-warning-soft text-fg-warning text-xs font-medium px-1.5 py-0.5 rounded"
-                                >High</span
-                            >
-                        </div>
-                        <span
-                            class="inline-flex items-center bg-danger-soft border border-danger-subtle text-fg-danger-strong text-xs font-medium px-1.5 py-0.5 rounded-sm"
-                        >
-                            <span
-                                class="w-2 h-2 me-1 bg-danger rounded-full"
-                            ></span>
-                            Belum Diproses
-                        </span>
-                    </div>
-                </li>
-            </ul>
-        </main>
-    </MobileLayout>
+        <div class="mt-4">
+            <p
+                ref="descRef"
+                class="text-sm font-normal text-gray-900 break-words whitespace-pre-line"
+                :class="{ 'line-clamp-3': !expanded }"
+            >
+                {{ description }}
+            </p>
+
+            <button
+                v-if="isClamped || expanded"
+                type="button"
+                @click="expanded = !expanded"
+                class="mt-1 text-xs font-medium text-primary-500 hover:underline"
+            >
+                {{ expanded ? "Tampilkan lebih sedikit" : "Selengkapnya" }}
+            </button>
+        </div>
+        <span
+            class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 mt-2"
+        >
+            <ProgrammingIcon size="15" />
+            Jaringan
+        </span>
+
+        <!-- Garis sobekan + lekukan -->
+        <div class="relative -mx-5 my-5">
+            <span
+                class="absolute left-0 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full"
+                :class="notchClass"
+            ></span>
+            <span
+                class="absolute right-0 top-1/2 h-6 w-6 translate-x-1/2 -translate-y-1/2 rounded-full"
+                :class="notchClass"
+            ></span>
+            <div class="mx-5 border-t-2 border-dashed border-gray-200"></div>
+        </div>
+
+        <!-- Footer: tanggal, durasi, harga -->
+        <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+                <span
+                    class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700"
+                >
+                    <CalendarIcon size="15" />
+                    Dec 24, 2024
+                </span>
+                <span
+                    class="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-3 py-1.5 text-xs font-medium text-gray-700"
+                >
+                    <ClockCircleIcon size="15" />
+                    1 Hari lebih Lambat
+                </span>
+            </div>
+        </div>
+        <div class="flex flex-col items-end">
+            <p class="text-sm font-bold text-gray-900">tx-1236574561-qwert</p>
+        </div>
+    </div>
 </template>
 
 <script setup>
-import MobileLayout from "@/Layouts/MobileLayout.vue";
+import { ProgrammingIcon } from "@solar-icons/vue/bold/programming";
+import { CalendarIcon } from "@solar-icons/vue/bold/calendar";
+import { ClockCircleIcon } from "@solar-icons/vue/bold/clock-circle";
+
+import { ref, onMounted, watch, nextTick } from "vue";
+
+const props = defineProps({
+    description: {
+        type: String,
+        default:
+            "Lorem ipsum dolor sit amet consectetur adipisicing elit. Possimus, atque eveniet. Rerum placeat ipsum consequuntur veniam ullam blanditiis. Rerum quaerat et ducimus nemo labore suscipit eveniet enim maxime iure placeat? Atque quos perferendis ex, consectetur porro ratione ipsum aliquid, accusantium hic, praesentium necessitatibus sapiente in quo cupiditate? Rem vel eveniet minima fugit, blanditiis quia hic, amet vitae earum placeat iste repellat magni. Officia modi sapiente odit unde asperiores vero illo necessitatibus maiores quidem. At provident, deleniti quisquam iure eaque aliquam ea a quasi quia, optio pariatur? Non, sint magni adipisci repudiandae ex architecto, minus vitae, assumenda error repellat et quis!",
+    },
+    // props lain tetap
+    notchClass: { type: String, default: "bg-gray-100" },
+});
+
+const descRef = ref(null);
+const expanded = ref(false);
+const isClamped = ref(false);
+
+// teks terpotong kalau tinggi isi aslinya lebih besar dari tinggi yang terlihat
+const checkClamp = async () => {
+    await nextTick();
+    const el = descRef.value;
+    if (!el || expanded.value) return;
+    isClamped.value = el.scrollHeight > el.clientHeight + 1;
+};
+
+onMounted(checkClamp);
+watch(
+    () => props.description,
+    () => {
+        expanded.value = false;
+        checkClamp();
+    },
+);
 </script>

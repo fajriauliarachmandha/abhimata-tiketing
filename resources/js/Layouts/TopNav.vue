@@ -1,76 +1,19 @@
 <template>
+    <!-- Top navbar -->
     <nav
-        class="bg-neutral-primary fixed w-full z-20 top-0 start-0 border-b border-default"
+        class="bg-neutral-primary fixed w-full z-50 top-0 start-0 border-b border-default"
     >
-        <div
-            class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4"
-        >
-            <Link
-                href="/admin/dashboard"
-                class="flex items-center space-x-3 rtl:space-x-reverse"
-            >
-                <span
-                    class="self-center text-xl text-heading font-semibold whitespace-nowrap"
-                >
-                    E-Tiket
-                </span>
-            </Link>
-
-            <div
-                class="flex items-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse"
-            >
-                <!-- User dropdown -->
-                <div class="relative" ref="userMenuRef">
-                    <button
-                        type="button"
-                        class="flex text-sm bg-neutral-primary rounded-full focus:ring-4 focus:ring-neutral-tertiary"
-                        :aria-expanded="userMenuOpen"
-                        @click="userMenuOpen = !userMenuOpen"
-                    >
-                        <span class="sr-only">Open user menu</span>
-                        <img
-                            class="w-8 h-8 rounded-full"
-                            :src="avatarUrl"
-                            alt="user photo"
-                        />
-                    </button>
-
-                    <div
-                        v-if="userMenuOpen"
-                        class="absolute end-0 top-full mt-2 z-50 bg-neutral-primary-medium border border-default-medium rounded-base shadow-lg w-44"
-                    >
-                        <div class="px-4 py-3 text-sm border-b border-default">
-                            <span class="block text-heading font-medium">{{
-                                user.name
-                            }}</span>
-                            <span class="block text-body truncate">{{
-                                user.username
-                            }}</span>
-                        </div>
-                        <ul class="p-2 text-sm text-body font-medium">
-                            <li>
-                                <Link
-                                    href="/logout"
-                                    method="post"
-                                    as="button"
-                                    class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded"
-                                >
-                                    Sign out
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Hamburger -->
+        <div class="h-[72px] px-4 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <!-- Hamburger: hanya di HP, membuka sidebar -->
                 <button
                     type="button"
-                    class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-body rounded-base md:hidden hover:bg-neutral-secondary-soft hover:text-heading focus:outline-none focus:ring-2 focus:ring-neutral-tertiary"
-                    aria-controls="navbar-user"
-                    :aria-expanded="mobileMenuOpen"
-                    @click="mobileMenuOpen = !mobileMenuOpen"
+                    class="lg:hidden inline-flex items-center justify-center w-10 h-10 text-body rounded-base hover:bg-neutral-secondary-soft hover:text-heading focus:outline-none focus:ring-2 focus:ring-neutral-tertiary"
+                    aria-controls="default-sidebar"
+                    :aria-expanded="sidebarOpen"
+                    @click="sidebarOpen = !sidebarOpen"
                 >
-                    <span class="sr-only">Open main menu</span>
+                    <span class="sr-only">Open sidebar</span>
                     <svg
                         class="w-6 h-6"
                         aria-hidden="true"
@@ -81,7 +24,7 @@
                         viewBox="0 0 24 24"
                     >
                         <path
-                            v-if="!mobileMenuOpen"
+                            v-if="!sidebarOpen"
                             stroke="currentColor"
                             stroke-linecap="round"
                             stroke-width="2"
@@ -96,57 +39,105 @@
                         />
                     </svg>
                 </button>
-            </div>
 
-            <!-- Menu: hidden di HP kecuali dibuka, selalu tampil di md ke atas -->
-            <div
-                id="navbar-user"
-                class="items-center justify-between w-full md:flex md:w-auto md:order-1"
-                :class="{ hidden: !mobileMenuOpen }"
-            >
-                <ul
-                    class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-default rounded-base bg-neutral-secondary-soft md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-neutral-primary"
+                <Link
+                    href="/admin/dashboard"
+                    class="text-xl text-heading font-semibold whitespace-nowrap"
                 >
-                    <li v-for="item in menuItems" :key="item.href">
-                        <Link
-                            :href="item.href"
-                            class="block py-2 px-3 rounded md:p-0"
-                            :class="
-                                isActive(item.href)
-                                    ? 'text-white bg-brand md:bg-transparent md:text-fg-brand'
-                                    : 'text-heading hover:bg-neutral-tertiary md:hover:bg-transparent md:hover:text-fg-brand'
-                            "
-                        >
-                            {{ item.label }}
-                        </Link>
-                    </li>
-                </ul>
+                    <img
+                        src="/public/abhimata-logo.webp"
+                        alt="logo"
+                        class="w-10 h-10 inline-block me-2"
+                    />
+                    E-Tiket
+                </Link>
             </div>
         </div>
     </nav>
+
+    <!-- Latar gelap, hanya di HP saat sidebar terbuka -->
+    <div
+        v-if="sidebarOpen"
+        class="fixed inset-0 z-30 bg-black/40 lg:hidden"
+        @click="sidebarOpen = false"
+    ></div>
+
+    <!-- Sidebar: mulai di bawah navbar -->
+    <aside
+        id="default-sidebar"
+        class="fixed top-[72px] bottom-0 start-0 z-40 w-64 transition-transform duration-200 lg:translate-x-0"
+        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+        aria-label="Sidebar"
+    >
+        <div
+            class="h-full px-3 py-4 overflow-y-auto bg-neutral-primary-soft border-e border-default"
+        >
+            <ul class="space-y-2 font-medium">
+                <li v-for="item in menuItems" :key="item.href">
+                    <Link
+                        :href="item.href"
+                        :method="item.method ?? 'get'"
+                        :as="item.method ? 'button' : 'a'"
+                        class="flex items-center w-full px-2 py-1.5 rounded-sm text-start"
+                        :class="
+                            isActive(item.href)
+                                ? 'bg-neutral-tertiary text-fg-brand'
+                                : item.danger
+                                  ? 'text-fg-danger hover:bg-danger-soft'
+                                  : 'text-body hover:bg-neutral-tertiary hover:text-fg-brand'
+                        "
+                    >
+                        <component :is="item.icon" size="24" class="shrink-0" />
+                        <span class="ms-3">{{ item.label }}</span>
+                    </Link>
+                </li>
+            </ul>
+        </div>
+    </aside>
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { Link, usePage, router } from "@inertiajs/vue3";
+import { HomeIcon } from "@solar-icons/vue/bold/home";
+import { UsersGroupRoundedIcon } from "@solar-icons/vue/bold/users-group-rounded";
+import { BuildingsIcon } from "@solar-icons/vue/bold/buildings";
+import { Logout2Icon } from "@solar-icons/vue/bold/logout-2";
+import { TicketIcon } from "@solar-icons/vue/bold/ticket";
 
 const page = usePage();
-const user = computed(() => page.props.auth.user);
 
-const avatarUrl = computed(
-    () =>
-        `https://api.dicebear.com/10.x/sprouts/svg?seed=${encodeURIComponent(user.value?.name ?? "user")}`,
-);
-
+// Menu sidebar. Tambah item baru di sini.
 const menuItems = [
-    { label: "Home", href: "/admin/dashboard" },
-    { label: "", href: "/admin/dashboard" },
-    // tambahkan menu lain di sini
+    { label: "Home", href: "/admin/home", icon: HomeIcon },
+    {
+        label: "Data Pengguna",
+        href: "/admin/users",
+        icon: UsersGroupRoundedIcon,
+    },
+    {
+        label: "Data Departemen",
+        href: "/admin/department",
+        icon: BuildingsIcon,
+    },
+    {
+        label: "Data Tiket",
+        href: "/admin/history",
+        icon: TicketIcon,
+    },
+    {
+        label: "Sign Out",
+        href: "/logout",
+        method: "post",
+        icon: Logout2Icon,
+        danger: true,
+    },
 ];
+
 const isActive = (href) => page.url.startsWith(href);
 
 const userMenuOpen = ref(false);
-const mobileMenuOpen = ref(false);
+const sidebarOpen = ref(false);
 const userMenuRef = ref(null);
 
 const closeOnOutsideClick = (e) => {
@@ -158,9 +149,10 @@ const closeOnOutsideClick = (e) => {
 let removeNavigateListener;
 onMounted(() => {
     document.addEventListener("click", closeOnOutsideClick);
+    // tutup dropdown dan sidebar setiap pindah halaman
     removeNavigateListener = router.on("navigate", () => {
         userMenuOpen.value = false;
-        mobileMenuOpen.value = false;
+        sidebarOpen.value = false;
     });
 });
 onBeforeUnmount(() => {
@@ -168,4 +160,3 @@ onBeforeUnmount(() => {
     removeNavigateListener?.();
 });
 </script>
-t>
