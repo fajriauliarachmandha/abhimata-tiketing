@@ -42,4 +42,18 @@ class TicketController extends Controller
 
         return redirect()->back()->with('success', 'Ticket berhasil diperbarui.');
     }
+
+    public function storeTracking(Request $request, Ticket $ticket)
+    {
+        $data = $request->validate([
+            'note' => 'required|string|max:500',
+        ]);
+
+        $ticket->trackings()->create([
+            'user_id' => auth()->id(),
+            'note' => $data['note'],
+        ]);
+
+        return back();
+    }
 }

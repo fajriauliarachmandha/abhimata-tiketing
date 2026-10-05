@@ -295,23 +295,23 @@
                     <form @submit.prevent="submitTracking">
                         <div class="py-2">
                             <label
-                                for="tracking-description"
+                                for="tracking-note"
                                 class="block mb-2.5 text-sm font-medium text-heading"
                             >
                                 Keterangan
                             </label>
                             <input
                                 type="text"
-                                id="tracking-description"
-                                v-model="trackingForm.description"
+                                id="tracking-note"
+                                v-model="trackingForm.note"
                                 class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-sm focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
                                 required
                             />
                             <span
-                                v-if="trackingForm.errors.description"
+                                v-if="trackingForm.errors.note"
                                 class="text-xs text-red-500 mt-1 block"
                             >
-                                {{ trackingForm.errors.description }}
+                                {{ trackingForm.errors.note }}
                             </span>
                         </div>
 
@@ -462,7 +462,7 @@ const processTicket = () => {
 const isTrackingModalOpen = ref(false);
 
 const trackingForm = useForm({
-    description: "",
+    note: "",
 });
 
 const closeTrackingModal = () => {
