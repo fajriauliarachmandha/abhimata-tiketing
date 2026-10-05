@@ -9,8 +9,8 @@ use Inertia\Inertia;
 
 class HomeController extends Controller
 {
-    public function index(Request $request){
-        $tickets = Ticket::where('created_by', $request->user()->id)->get();
+    public function index(Ticket $tickets){
+        $tickets = Ticket::with(['department', 'creator','technician'])->latest()->get();
         return Inertia::render('User/Home', [
             'tickets' => $tickets
         ]);

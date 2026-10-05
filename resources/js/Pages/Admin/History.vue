@@ -1,5 +1,5 @@
 <template>
-    <TopNav />
+    <NavAdmin />
     <main class="px-4 pt-20 pb-6 lg:ms-64 lg:pt-24">
         <!-- Search -->
         <div class="flex items-center justify-between space-x-2 py-4">
@@ -218,7 +218,7 @@
 
 <script setup>
 import { computed, ref, watch } from "vue";
-import TopNav from "../../Layouts/TopNav.vue";
+import NavAdmin from "../../Layouts/NavAdmin.vue";
 import { MinimalisticMagnifierIcon } from "@solar-icons/vue/linear/minimalistic-magnifier";
 
 const props = defineProps({

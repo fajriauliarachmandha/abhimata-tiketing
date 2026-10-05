@@ -5,7 +5,7 @@
         <div
             class="w-full max-w-md lg:max-w-7xl bg-white min-h-screen shadow-2xl relative flex flex-col"
         >
-            <TopNav />
+            <NavAdmin />
 
             <main class="flex-1 px-4 pt-20 pb-32">
                 <div class="overflow-hidden">
@@ -29,5 +29,5 @@
 </template>
 
 <script setup>
-import TopNav from "./TopNav.vue";
+import NavAdmin from "@/Layouts/NavAdmin.vue";
 </script>

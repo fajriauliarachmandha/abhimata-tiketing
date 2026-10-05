@@ -1,228 +1,162 @@
 <template>
-    <div class="max-w-md relative">
-        <div
-            class="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 bg-neutral-primary-soft border-t border-default rounded-t-lg shadow-[0_-4px_6px_rgba(0,0,0,0.1)]"
-        >
-            <div class="w-full">
-                <div
-                    class="grid max-w-xs grid-cols-3 gap-1 p-1 mx-auto my-2 bg-neutral-tertiary rounded-base"
-                    role="group"
+    <!-- Top navbar -->
+    <nav
+        class="bg-neutral-primary fixed w-full z-50 top-0 start-0 border-b border-default"
+    >
+        <div class="h-[72px] px-4 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <!-- Hamburger: hanya di HP, membuka sidebar -->
+                <button
+                    type="button"
+                    class="lg:hidden inline-flex items-center justify-center w-10 h-10 text-body rounded-base hover:bg-neutral-secondary-soft hover:text-heading focus:outline-none focus:ring-2 focus:ring-neutral-tertiary"
+                    aria-controls="default-sidebar"
+                    :aria-expanded="sidebarOpen"
+                    @click="sidebarOpen = !sidebarOpen"
                 >
-                    <Link
-                        href="/admin/users"
-                        class="px-5 py-1.5 text-xs font-medium rounded text-center transition-all duration-200 ease-in-out"
-                        :class="
-                            isActive('/admin/users')
-                                ? 'bg-dark-strong text-white'
-                                : 'text-body hover:bg-dark-strong hover:text-white'
-                        "
-                    >
-                        Users
-                    </Link>
-                    <Link
-                        href="/admin/department"
-                        class="px-5 py-1.5 text-xs font-medium rounded text-center transition-all duration-200 ease-in-out"
-                        :class="
-                            isActive('/admin/department')
-                                ? 'bg-dark-strong text-white'
-                                : 'text-body hover:bg-dark-strong hover:text-white'
-                        "
-                    >
-                        Departemen
-                    </Link>
-                    <Link
-                        href="/admin/history"
-                        class="px-5 py-1.5 text-xs font-medium rounded text-center transition-all duration-200 ease-in-out"
-                        :class="
-                            isActive('/admin/ticket')
-                                ? 'bg-dark-strong text-white'
-                                : 'text-body hover:bg-dark-strong hover:text-white'
-                        "
-                    >
-                        Ticket
-                    </Link>
-                </div>
-            </div>
-
-            <div class="grid h-full max-w-lg grid-cols-4 mx-auto">
-                <Link
-                    href="/admin/home"
-                    class="inline-flex flex-col items-center justify-center p-4 hover:bg-neutral-secondary-medium group"
-                >
-                    <HomeSmileAngleIcon
-                        size="24"
-                        class=""
-                        :class="
-                            isActive('/admin/home')
-                                ? 'text-primary-500'
-                                : 'text-body group-hover:text-primary-600'
-                        "
-                    />
-
-                    <span class="sr-only">Home</span>
-                </Link>
-
-                <Link
-                    href="/admin/ratings"
-                    class="inline-flex flex-col items-center justify-center p-4 hover:bg-neutral-secondary-medium group"
-                >
-                    <StarIcon
-                        size="24"
-                        :class="
-                            isActive('/admin/ratings')
-                                ? 'text-primary-500'
-                                : 'text-body group-hover:text-primary-600'
-                        "
-                    />
-
-                    <span class="sr-only">Rating</span>
-                </Link>
-
-                <Link
-                    href="/admin/history"
-                    class="inline-flex flex-col items-center justify-center p-4 hover:bg-neutral-secondary-medium group"
-                >
+                    <span class="sr-only">Open sidebar</span>
                     <svg
+                        class="w-6 h-6"
+                        aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg"
                         width="24"
                         height="24"
-                        viewBox="0 0 24 24"
                         fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="lucide lucide-rotate-ccw-clock preview-icon"
-                        :class="
-                            isActive('/admin/history')
-                                ? 'text-primary-500'
-                                : 'text-body group-hover:text-primary-600'
-                        "
+                        viewBox="0 0 24 24"
                     >
                         <path
-                            d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
+                            v-if="!sidebarOpen"
+                            stroke="currentColor"
+                            stroke-linecap="round"
+                            stroke-width="2"
+                            d="M5 7h14M5 12h14M5 17h14"
                         />
-                        <path d="M3 3v5h5" />
-                        <path d="M12 7v5l4 2" />
+                        <path
+                            v-else
+                            stroke="currentColor"
+                            stroke-linecap="round"
+                            stroke-width="2"
+                            d="M6 6l12 12M18 6L6 18"
+                        />
                     </svg>
-                    <span class="sr-only">Riwayat</span>
-                </Link>
-
-                <button
-                    type="button"
-                    @click="isModalOpen = true"
-                    class="inline-flex flex-col items-center justify-center p-4 hover:bg-neutral-secondary-medium group"
-                >
-                    <Logout2Icon size="24" class="text-danger" />
-
-                    <span class="sr-only">Log-out</span>
                 </button>
+
+                <Link
+                    href="/admin/dashboard"
+                    class="text-xl text-heading font-semibold whitespace-nowrap"
+                >
+                    <img
+                        src="/public/abhimata-logo.webp"
+                        alt="logo"
+                        class="w-10 h-10 inline-block me-2"
+                    />
+                    E-Tiket
+                </Link>
             </div>
         </div>
+    </nav>
 
-        <Teleport to="body">
-            <div
-                v-if="isModalOpen"
-                id="popup-modal"
-                tabindex="-1"
-                class="fixed inset-0 z-[100] flex justify-center items-center w-full h-full bg-black/50"
-            >
-                <div class="relative p-4 w-full max-w-md max-h-full">
-                    <!-- Kotak Putih Modal -->
-                    <div
-                        class="relative bg-neutral-primary-soft border border-default rounded-base shadow-sm p-4 md:p-6"
+    <!-- Latar gelap, hanya di HP saat sidebar terbuka -->
+    <div
+        v-if="sidebarOpen"
+        class="fixed inset-0 z-30 bg-black/40 lg:hidden"
+        @click="sidebarOpen = false"
+    ></div>
+
+    <!-- Sidebar: mulai di bawah navbar -->
+    <aside
+        id="default-sidebar"
+        class="fixed top-[72px] bottom-0 start-0 z-40 w-64 transition-transform duration-200 lg:translate-x-0"
+        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+        aria-label="Sidebar"
+    >
+        <div
+            class="h-full px-3 py-4 overflow-y-auto bg-neutral-primary-soft border-e border-default"
+        >
+            <ul class="space-y-2 font-medium">
+                <li v-for="item in menuItems" :key="item.href">
+                    <Link
+                        :href="item.href"
+                        :method="item.method ?? 'get'"
+                        :as="item.method ? 'button' : 'a'"
+                        class="flex items-center w-full px-2 py-1.5 rounded-sm text-start"
+                        :class="
+                            isActive(item.href)
+                                ? 'bg-neutral-tertiary text-fg-brand'
+                                : item.danger
+                                  ? 'text-fg-danger hover:bg-danger-soft'
+                                  : 'text-body hover:bg-neutral-tertiary hover:text-fg-brand'
+                        "
                     >
-                        <!-- Tombol Silang (X) -->
-                        <button
-                            type="button"
-                            class="absolute top-3 end-2.5 text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-base text-sm w-9 h-9 ms-auto inline-flex justify-center items-center"
-                            @click="isModalOpen = false"
-                        >
-                            <svg
-                                class="w-5 h-5"
-                                aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke="currentColor"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M6 18 17.94 6M18 18 6.06 6"
-                                />
-                            </svg>
-                            <span class="sr-only">Close modal</span>
-                        </button>
-
-                        <!-- Isi Konten Modal -->
-                        <div class="p-4 md:p-5 text-center">
-                            <svg
-                                class="mx-auto mb-4 text-fg-disabled w-12 h-12"
-                                aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke="currentColor"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M12 13V8m0 8h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                                />
-                            </svg>
-                            <h3 class="mb-6 text-body">
-                                Anda yakin ingin keluar dari akun ini?
-                            </h3>
-
-                            <!-- Tombol Aksi -->
-                            <div
-                                class="flex items-center space-x-4 justify-center"
-                            >
-                                <button
-                                    @click="handleLogout"
-                                    type="button"
-                                    class="text-white bg-danger box-border border border-transparent hover:bg-danger-strong focus:ring-4 focus:ring-danger-medium shadow-xs font-medium leading-5 rounded-full text-sm px-4 py-4 focus:outline-none"
-                                >
-                                    Ya, Keluar
-                                </button>
-                                <button
-                                    @click="isModalOpen = false"
-                                    type="button"
-                                    class="text-body bg-neutral-secondary-medium box-border border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary shadow-xs font-medium leading-5 rounded-full text-sm px-4 py-4 focus:outline-none"
-                                >
-                                    Tidak, Batal
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
-    </div>
+                        <component :is="item.icon" size="24" class="shrink-0" />
+                        <span class="ms-3">{{ item.label }}</span>
+                    </Link>
+                </li>
+            </ul>
+        </div>
+    </aside>
 </template>
 
 <script setup>
-import { Link, router, usePage } from "@inertiajs/vue3";
-import { ref } from "vue";
-
-import { HomeSmileAngleIcon } from "@solar-icons/vue/bold/home-smile-angle";
-import { StarIcon } from "@solar-icons/vue/bold/star";
+import { ref, onMounted, onBeforeUnmount } from "vue";
+import { Link, usePage, router } from "@inertiajs/vue3";
+import { HomeIcon } from "@solar-icons/vue/bold/home";
+import { UsersGroupRoundedIcon } from "@solar-icons/vue/bold/users-group-rounded";
+import { BuildingsIcon } from "@solar-icons/vue/bold/buildings";
 import { Logout2Icon } from "@solar-icons/vue/bold/logout-2";
+import { TicketIcon } from "@solar-icons/vue/bold/ticket";
 
 const page = usePage();
 
-const isActive = (path) => page.url.startsWith(path);
+// Menu sidebar. Tambah item baru di sini.
+const menuItems = [
+    { label: "Home", href: "/admin/home", icon: HomeIcon },
+    {
+        label: "Data Pengguna",
+        href: "/admin/users",
+        icon: UsersGroupRoundedIcon,
+    },
+    {
+        label: "Data Departemen",
+        href: "/admin/department",
+        icon: BuildingsIcon,
+    },
+    {
+        label: "Data Tiket",
+        href: "/admin/history",
+        icon: TicketIcon,
+    },
+    {
+        label: "Sign Out",
+        href: "/logout",
+        method: "post",
+        icon: Logout2Icon,
+        danger: true,
+    },
+];
 
-const isModalOpen = ref(false);
+const isActive = (href) => page.url.startsWith(href);
 
-const handleLogout = () => {
-    router.post("/logout", {}, { onFinish: () => (isModalOpen.value = false) });
+const userMenuOpen = ref(false);
+const sidebarOpen = ref(false);
+const userMenuRef = ref(null);
+
+const closeOnOutsideClick = (e) => {
+    if (userMenuRef.value && !userMenuRef.value.contains(e.target)) {
+        userMenuOpen.value = false;
+    }
 };
+
+let removeNavigateListener;
+onMounted(() => {
+    document.addEventListener("click", closeOnOutsideClick);
+    // tutup dropdown dan sidebar setiap pindah halaman
+    removeNavigateListener = router.on("navigate", () => {
+        userMenuOpen.value = false;
+        sidebarOpen.value = false;
+    });
+});
+onBeforeUnmount(() => {
+    document.removeEventListener("click", closeOnOutsideClick);
+    removeNavigateListener?.();
+});
 </script>

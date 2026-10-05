@@ -1,5 +1,5 @@
 <template>
-    <TopNav />
+    <NavAdmin />
     <main class="px-4 pt-20 pb-6 lg:ms-64 lg:pt-24">
         <!-- Search & Add Data -->
         <div class="flex items-center justify-between space-x-2 py-4">
@@ -375,7 +375,7 @@
 <script setup>
 import { computed, ref, onMounted, onBeforeUnmount } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
-import TopNav from "../../Layouts/TopNav.vue";
+import NavAdmin from "../../Layouts/NavAdmin.vue";
 import { TrashBinTrashIcon } from "@solar-icons/vue/bold/trash-bin-trash";
 import { PenIcon } from "@solar-icons/vue/bold/pen";
 import { CloseIcon } from "@solar-icons/vue/bold/close";

@@ -10,7 +10,7 @@ use Inertia\Inertia;
 class HomeController extends Controller
 {
     public function index(){
-        $tickets = Ticket::with('technician')->latest()->get();
+        $tickets = Ticket::with(['department', 'creator','technician'])->latest()->get();
         return Inertia::render('Admin/Home',[
             'tickets' => $tickets
         ]);
