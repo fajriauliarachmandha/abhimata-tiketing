@@ -135,38 +135,156 @@
                     >
                         Tiket ini sedang diproses.
                     </div>
+                    <div
+                        v-else-if="ticket.status === 'done'"
+                        class="text-center py-3 text-sm font-medium text-gray-500 bg-gray-50 border border-gray-200 rounded-lg my-4"
+                    >
+                        Tiket ini sudah selesai.
+                    </div>
                 </div>
             </div>
 
             <!-- ==================== KOLOM KANAN: PELACAKAN ==================== -->
             <div>
-                <!-- Isi di bawah masih contoh (placeholder), belum dari database -->
-                <ol class="relative border-s border-default">
-                    <li class="mb-7 ms-6">
-                        <span
-                            class="absolute flex items-center justify-center w-5 h-5 bg-amber-200 rounded-full -start-3"
-                        ></span>
-                        <time
-                            class="bg-neutral-secondary-medium border border-default-medium text-heading text-xs font-medium px-1.5 py-0.5 rounded"
-                        >
-                            March 13th, 2025
-                        </time>
-                        <p class="mb-4 text-body text-sm pt-1">
-                            Get access to over 20+ pages including a dashboard
-                            layout, charts, kanban board, calendar, and
-                            pre-order E-commerce & Marketing pages.
-                        </p>
-                    </li>
-                </ol>
+                <!-- Daftar riwayat pelacakan -->
+                <div v-if="trackings.length > 0" class="mb-6 ms-2 mt-2">
+                    <div
+                        v-for="(track, index) in trackings"
+                        :key="track.id"
+                        class="flex items-stretch gap-3"
+                    >
+                        <!-- Kiri: hari dan jam -->
+                        <div class="w-16 shrink-0 pt-0.5 text-right">
+                            <p class="text-sm font-medium text-gray-700">
+                                {{ getRelativeDay(track.created_at) }}
+                            </p>
+                            <p class="text-[11px] text-gray-500">
+                                {{ formatTime(track.created_at) }}
+                            </p>
+                        </div>
 
+                        <!-- Tengah: titik dan garis penghubung -->
+                        <div class="flex flex-col items-center">
+                            <div
+                                class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-emerald-700"
+                            ></div>
+                            <!-- Garis tidak ditampilkan di catatan paling akhir -->
+                            <div
+                                v-if="index < trackings.length - 1"
+                                class="mt-1 w-px flex-1 bg-gray-300"
+                            ></div>
+                        </div>
+
+                        <!-- Kanan: catatan + penulisnya -->
+                        <div class="flex-1 pb-6 pt-0.5">
+                            <p class="text-sm font-medium text-emerald-700">
+                                {{ track.note }}
+                            </p>
+                            <p class="mt-1 text-[10px] text-gray-400">
+                                Oleh: {{ track.user?.name ?? "Sistem" }}
+                            </p>
+                        </div>
+
+                        <!-- Tombol edit dan hapus -->
+                        <div class="flex shrink-0 items-start gap-2">
+                            <button
+                                type="button"
+                                v-if="canTracking"
+                                @click="openEditTrackingModal(track)"
+                                class="font-medium text-fg-brand transition-all duration-200 ease-in-out active:scale-95 bg-blue-50 hover:bg-blue-100 rounded-full p-2"
+                            >
+                                <PenIcon size="24" />
+                            </button>
+                            <button
+                                type="button"
+                                v-if="canTracking"
+                                @click="openDeleteModal(track)"
+                                class="font-medium text-fg-danger transition-all duration-200 ease-in-out active:scale-95 bg-red-50 hover:bg-red-100 rounded-full p-2"
+                            >
+                                <TrashBinTrashIcon size="24" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <p v-else class="mb-6 ms-2 text-sm italic text-gray-500">
+                    Belum ada riwayat pelacakan.
+                </p>
+
+                <!-- Tombol tambah pelacakan -->
                 <button
+                    v-if="canTracking"
                     type="button"
-                    @click="isTrackingModalOpen = true"
-                    class="ms-6 inline-flex items-center justify-center gap-1.5 h-10 px-4 text-sm font-semibold text-white bg-primary-500 hover:bg-primary-600 border border-transparent rounded-sm shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-medium active:scale-95 transition duration-200"
+                    @click="openAddTrackingModal"
+                    class="ms-4 inline-flex w-full items-center justify-center gap-1.5 h-10 px-4 text-sm font-semibold text-white bg-primary-500 hover:bg-primary-600 border border-transparent rounded-sm shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-medium active:scale-95 transition duration-200"
                 >
                     <AddIcon size="24" />
                     <span>Pelacakan</span>
                 </button>
+
+                <div
+                    v-else-if="
+                        ticket.status !== 'done' &&
+                        ticket.status !== 'cancelled'
+                    "
+                    class="text-center py-3 text-sm font-medium text-green-600 bg-green-50 border border-green-200 rounded-lg my-4"
+                >
+                    {{
+                        ticket.assigned_to
+                            ? "Hanya teknisi yang ditugaskan yang bisa menambah pelacakan."
+                            : "Pilih teknisi terlebih dahulu agar bisa menambah pelacakan."
+                    }}
+                </div>
+
+                <!-- Tombol menyelesaikan ticket -->
+                <button
+                    v-if="canDone"
+                    type="button"
+                    @click="isDoneModalOpen = true"
+                    class="ms-4 inline-flex w-full items-center justify-center gap-1.5 h-10 px-4 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 border border-transparent rounded-sm shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-medium active:scale-95 transition duration-200 mt-3"
+                >
+                    <CloudCheckIcon size="24" />
+                    <span>Tandain Telah Selesai</span>
+                </button>
+
+                <!-- Penilaian dari pengaju (hanya tampil untuk tiket selesai) -->
+                <div v-if="ticket.status === 'done'" class="mb-5 ms-2 mt-4">
+                    <p class="mb-2.5 text-sm font-medium text-gray-700">
+                        Penilaian Tiket
+                    </p>
+
+                    <div v-if="ticket.review">
+                        <div class="flex items-center space-x-1">
+                            <StarIcon
+                                v-for="star in 5"
+                                :key="star"
+                                size="24"
+                                :class="
+                                    star <= ticket.review.rating
+                                        ? 'text-yellow-400'
+                                        : 'text-gray-300'
+                                "
+                            />
+                        </div>
+
+                        <div
+                            v-if="ticket.review.tags?.length"
+                            class="mt-3 flex flex-wrap gap-2"
+                        >
+                            <span
+                                v-for="tag in ticket.review.tags"
+                                :key="tag"
+                                class="rounded-full border border-gray-300 bg-gray-50 px-3 py-1 text-xs text-gray-700"
+                            >
+                                {{ tag }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <p v-else class="text-sm italic text-gray-500">
+                        Belum ada penilaian dari pengaju.
+                    </p>
+                </div>
             </div>
         </div>
 
@@ -255,7 +373,7 @@
             </div>
         </Transition>
 
-        <!-- Modal 2: tambah pelacakan -->
+        <!-- Modal 2: tambah / edit pelacakan (satu modal untuk dua mode) -->
         <Transition
             enter-active-class="transition ease-out duration-200"
             enter-from-class="opacity-0"
@@ -275,12 +393,17 @@
                 <div
                     class="relative w-full max-w-md bg-neutral-primary-soft rounded-sm border border-default shadow-lg p-5"
                 >
+                    <!-- Judul + tombol tutup -->
                     <div class="flex justify-between items-center pb-2">
                         <h3
                             id="tracking-title"
                             class="text-lg font-medium text-heading"
                         >
-                            Tambah Pelacakan
+                            {{
+                                editingTrackingId
+                                    ? "Edit Pelacakan"
+                                    : "Tambah Pelacakan"
+                            }}
                         </h3>
                         <button
                             type="button"
@@ -292,6 +415,7 @@
                         </button>
                     </div>
 
+                    <!-- Form -->
                     <form @submit.prevent="submitTracking">
                         <div class="py-2">
                             <label
@@ -315,8 +439,9 @@
                             </span>
                         </div>
 
+                        <!-- Tombol -->
                         <div
-                            class="flex justify-end items-center gap-3 border-default pt-4 mt-2"
+                            class="flex justify-end items-center gap-3 pt-4 mt-2"
                         >
                             <button
                                 type="button"
@@ -330,14 +455,125 @@
                                 :disabled="trackingForm.processing"
                                 class="inline-flex items-center text-white bg-primary-500 hover:bg-primary-600 border border-transparent shadow-xs font-medium leading-5 rounded-full text-sm px-4 py-3 focus:outline-none transition-all duration-200 ease-in-out active:scale-95 disabled:opacity-60"
                             >
-                                {{
-                                    trackingForm.processing
-                                        ? "Menyimpan..."
-                                        : "Simpan"
-                                }}
+                                {{ trackingSubmitText }}
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </Transition>
+
+        <!-- Modal 3: konfirmasi hapus pelacakan -->
+        <Transition
+            enter-active-class="transition ease-out duration-200"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+            leave-active-class="transition ease-in duration-150"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
+        >
+            <div
+                v-if="isDeleteModalOpen"
+                class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
+                role="alertdialog"
+                aria-modal="true"
+                aria-labelledby="delete-title"
+                @click.self="closeDeleteModal"
+            >
+                <div
+                    class="relative w-full max-w-sm bg-neutral-primary-soft rounded-sm border border-default shadow-lg p-5 text-center"
+                >
+                    <div
+                        class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-600"
+                    >
+                        <TrashBinTrashIcon size="28" />
+                    </div>
+
+                    <h3
+                        id="delete-title"
+                        class="text-lg font-semibold text-heading"
+                    >
+                        Hapus Catatan Pelacakan ini?
+                    </h3>
+
+                    <div class="mt-6 flex gap-3">
+                        <button
+                            type="button"
+                            @click="closeDeleteModal"
+                            :disabled="isDeleting"
+                            class="flex-1 inline-flex items-center justify-center h-10 px-4 text-sm font-semibold text-body bg-neutral-secondary-medium border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading rounded-sm shadow-xs focus:outline-none transition duration-200 active:scale-95 disabled:opacity-60"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="button"
+                            @click="deleteTracking"
+                            :disabled="isDeleting"
+                            class="flex-1 inline-flex items-center justify-center h-10 px-4 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 border border-transparent rounded-sm shadow-xs focus:outline-none focus:ring-4 focus:ring-red-200 transition duration-200 active:scale-95 disabled:opacity-60"
+                        >
+                            {{ isDeleting ? "Menghapus..." : "Ya, Hapus" }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+
+        <!-- Modal 4: konfirmasi selesai ticket -->
+        <Transition
+            enter-active-class="transition ease-out duration-200"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+            leave-active-class="transition ease-in duration-150"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
+        >
+            <div
+                v-if="isDoneModalOpen"
+                class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="done-title"
+                @click.self="closeDoneModal"
+            >
+                <div
+                    class="w-full max-w-sm max-h-[90vh] flex flex-col bg-white rounded-2xl shadow-lg p-5"
+                >
+                    <h3
+                        id="done-title"
+                        class="text-lg font-semibold text-heading"
+                    >
+                        Selesaikan tiket?
+                    </h3>
+                    <p class="mt-1 text-sm text-body">
+                        Yakin ingin menyelesaikan tiket ini?
+                    </p>
+
+                    <p v-if="doneError" class="mt-3 text-sm text-red-500">
+                        {{ doneError }}
+                    </p>
+
+                    <div class="mt-6 flex gap-3">
+                        <button
+                            type="button"
+                            @click="closeDoneModal"
+                            :disabled="doneForm.processing"
+                            class="flex-1 h-10 px-4 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full transition active:scale-95 disabled:opacity-60"
+                        >
+                            Tidak
+                        </button>
+                        <button
+                            type="button"
+                            @click="processDone"
+                            :disabled="doneForm.processing"
+                            class="flex-1 h-10 px-4 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded-full transition active:scale-95 disabled:opacity-60"
+                        >
+                            {{
+                                doneForm.processing
+                                    ? "Memproses..."
+                                    : "Ya, Selesaikan"
+                            }}
+                        </button>
+                    </div>
                 </div>
             </div>
         </Transition>
@@ -346,10 +582,14 @@
 
 <script setup>
 import { ref, computed } from "vue";
-import { useForm, usePage } from "@inertiajs/vue3";
+import { router, useForm, usePage } from "@inertiajs/vue3";
 import { AddIcon } from "@solar-icons/vue/bold/add";
 import { CloseIcon } from "@solar-icons/vue/bold/close";
+import { PenIcon } from "@solar-icons/vue/bold/pen";
+import { TrashBinTrashIcon } from "@solar-icons/vue/bold/trash-bin-trash";
+import { CloudCheckIcon } from "@solar-icons/vue/bold/cloud-check";
 import NavAdmin from "../../Layouts/NavAdmin.vue";
+import { StarIcon } from "@solar-icons/vue/bold/star";
 
 // ==================== DATA DARI CONTROLLER ====================
 const props = defineProps({
@@ -421,6 +661,29 @@ const getEtaStatus = (ticket) => {
     return `Lebih lambat ${diffInHours} jam`;
 };
 
+// Menampilkan "Hari ini", "Kemarin", atau tanggal singkat (misal 13 Okt)
+const getRelativeDay = (dateString) => {
+    if (!dateString) return "-";
+
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) return "Hari ini";
+    if (date.toDateString() === yesterday.toDateString()) return "Kemarin";
+
+    return date.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+};
+
+// Menampilkan jam dengan format 14:30
+const formatTime = (dateString) => {
+    if (!dateString) return "-";
+    return new Date(dateString)
+        .toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
+        .replace(".", ":");
+};
+
 // ==================== PROSES TIKET (PILIH TEKNISI) ====================
 const isTechnicianModalOpen = ref(false);
 const technicianError = ref("");
@@ -431,9 +694,7 @@ const processForm = useForm({
 });
 
 // Tombol "Proses Tiket" tampil selama tiket belum dibatalkan/ditutup/diproses
-const canProcess = computed(
-    () => !["cancelled", "closed", "in progress"].includes(props.ticket.status),
-);
+const canProcess = computed(() => props.ticket.status === "open");
 
 const closeTechnicianModal = () => {
     if (!processForm.processing) isTechnicianModalOpen.value = false;
@@ -458,24 +719,124 @@ const processTicket = () => {
     });
 };
 
-// ==================== TAMBAH PELACAKAN ====================
+// ==================== RIWAYAT PELACAKAN ====================
+// Kalau tiket belum punya riwayat, pakai array kosong supaya tidak error
+const trackings = computed(() => props.ticket.tracking ?? []);
+
+// Tombol "Pelacakan" hanya tampil untuk teknisi yang ditugaskan di tiket ini
+const canTracking = computed(
+    () =>
+        Number(props.ticket.assigned_to) === Number(user.value.id) &&
+        props.ticket.status !== "done",
+);
+
+// ==================== TAMBAH & EDIT PELACAKAN ====================
+
 const isTrackingModalOpen = ref(false);
+const editingTrackingId = ref(null);
 
 const trackingForm = useForm({
     note: "",
 });
+
+const trackingSubmitText = computed(() => {
+    if (trackingForm.processing) {
+        return editingTrackingId.value ? "Updating..." : "Menyimpan...";
+    }
+    return editingTrackingId.value ? "Update" : "Simpan";
+});
+
+const openAddTrackingModal = () => {
+    editingTrackingId.value = null;
+    trackingForm.reset();
+    trackingForm.clearErrors();
+    isTrackingModalOpen.value = true;
+};
+
+const openEditTrackingModal = (track) => {
+    editingTrackingId.value = track.id;
+    trackingForm.note = track.note;
+    trackingForm.clearErrors();
+    isTrackingModalOpen.value = true;
+};
 
 const closeTrackingModal = () => {
     if (!trackingForm.processing) isTrackingModalOpen.value = false;
 };
 
 const submitTracking = () => {
-    // TODO: sesuaikan URL ini dengan route pelacakan di routes/web.php
-    trackingForm.post(`/admin/ticket/${props.ticket.id}/tracking`, {
+    const options = {
         preserveScroll: true,
         onSuccess: () => {
-            trackingForm.reset();
             isTrackingModalOpen.value = false;
+            trackingForm.reset();
+        },
+    };
+
+    // TODO: sesuaikan URL dengan route di routes/web.php
+    if (editingTrackingId.value) {
+        trackingForm.put(
+            `/admin/ticket/${props.ticket.id}/tracking/${editingTrackingId.value}`,
+            options,
+        );
+    } else {
+        trackingForm.post(`/admin/ticket/${props.ticket.id}/tracking`, options);
+    }
+};
+
+// ==================== HAPUS PELACAKAN ====================
+const isDeleteModalOpen = ref(false);
+const isDeleting = ref(false);
+const trackingToDelete = ref(null);
+
+const openDeleteModal = (track) => {
+    trackingToDelete.value = track;
+    isDeleteModalOpen.value = true;
+};
+
+const closeDeleteModal = () => {
+    if (isDeleting.value) return;
+    isDeleteModalOpen.value = false;
+};
+
+const deleteTracking = () => {
+    if (!trackingToDelete.value) return;
+
+    router.delete(
+        `/admin/ticket/${props.ticket.id}/tracking/${trackingToDelete.value.id}`,
+        {
+            preserveScroll: true,
+            onStart: () => (isDeleting.value = true),
+            onSuccess: () => (isDeleteModalOpen.value = false),
+            onFinish: () => (isDeleting.value = false),
+        },
+    );
+};
+
+// ==================== MENYELESAIKAN TIKET ====================
+const isDoneModalOpen = ref(false);
+const doneError = ref("");
+
+const doneForm = useForm({});
+
+// Tombol hanya tampil untuk teknisi yang ditugaskan, saat tiket sedang diproses
+const canDone = computed(
+    () => props.ticket.status === "in progress" && canTracking.value,
+);
+
+const closeDoneModal = () => {
+    if (!doneForm.processing) isDoneModalOpen.value = false;
+};
+
+const processDone = () => {
+    doneForm.put(`/admin/ticket/${props.ticket.id}/done`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            isDoneModalOpen.value = false;
+        },
+        onError: (errors) => {
+            doneError.value =
+                Object.values(errors)[0] ?? "Gagal menyelesaikan tiket.";
         },
     });
 };

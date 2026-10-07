@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Department;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -86,8 +87,12 @@ class DepartmentController extends Controller
      */
     public function destroy(Department $department)
     {
+        try {
         $department->delete();
+    } catch (QueryException $e) {
+        return redirect()->back()->with('error', 'Departemen tidak bisa dihapus karena masih dipakai.');
+    }
 
-        return redirect()->back()->with('success', 'Departemen berhasil dihapus');
+    return redirect()->back()->with('success', 'Departemen berhasil dihapus');
     }
 }

@@ -373,8 +373,9 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onBeforeUnmount } from "vue";
-import { router, useForm } from "@inertiajs/vue3";
+import { computed, ref, onMounted, onBeforeUnmount, watch } from "vue";
+import Swal from "sweetalert2";
+import { router, useForm, usePage } from "@inertiajs/vue3";
 import NavAdmin from "../../Layouts/NavAdmin.vue";
 import { TrashBinTrashIcon } from "@solar-icons/vue/bold/trash-bin-trash";
 import { PenIcon } from "@solar-icons/vue/bold/pen";
@@ -386,6 +387,29 @@ const props = defineProps({
     users: Array,
     departments: Array,
 });
+
+// ==================== NOTIFIKASI (SWEETALERT) ====================
+const page = usePage();
+
+const Toast = Swal.mixin({
+    toast: true,
+    position: "top-end",
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+});
+
+// Pesan dari controller (->with('success'/'error', ...)) tampil sebagai toast
+watch(
+    () => page.props.flash,
+    (flash) => {
+        if (flash?.success)
+            Toast.fire({ icon: "success", title: flash.success });
+        if (flash?.error) Toast.fire({ icon: "error", title: flash.error });
+    },
+    { deep: true },
+);
+// ================================================
 
 const roleOptions = [
     { value: "department", label: "Department" },
@@ -431,10 +455,24 @@ const closeModal = () => {
 };
 
 const handleSubmit = () => {
+    const isEdit = !!editingId.value;
     const options = {
+        preserveScroll: true,
         onSuccess: () => {
             closeModal();
             form.reset();
+        },
+        onError: (errors) => {
+            // modal tetap terbuka supaya data tidak hilang
+            Swal.fire({
+                icon: "error",
+                title: isEdit
+                    ? "Gagal memperbarui Pengguna"
+                    : "Gagal menambahkan Pengguna",
+                text:
+                    Object.values(errors)[0] ??
+                    "Periksa kembali data yang diisi.",
+            });
         },
     };
 

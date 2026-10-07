@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Department;
 use App\Models\Users;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -66,7 +67,11 @@ class UsersController extends Controller
     }
 
     public function destroy(Users $users){
-        $users->delete();
+        try{
+            $users->delete();
+        } catch (QueryException $e){
+            return redirect()->back()->with('error','Pengguna tidak bisa dihapus karena masih dipakai');
+        }
         return redirect()->back()->with('success','Data pengguna berhasil dihapus');
     }
 }

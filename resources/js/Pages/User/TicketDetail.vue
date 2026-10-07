@@ -1,18 +1,22 @@
 <template>
     <NavUser />
+
     <main class="min-h-screen bg-gray-100 px-4 pt-20 pb-6 lg:ms-64 lg:pt-24">
         <h1
             class="text-center text-base font-bold tracking-wide text-gray-900 uppercase"
         >
             Detail Tiket
         </h1>
+
+        <!-- Laptop: 2 kolom (kiri = tiket, kanan = riwayat pelacakan). HP: menumpuk -->
         <div
             class="mx-auto mt-7 grid max-w-md grid-cols-1 items-start gap-6 lg:max-w-5xl lg:grid-cols-2"
         >
-            <!-- Tiket -->
+            <!-- ==================== KOLOM KIRI: TIKET ==================== -->
             <div class="drop-shadow-lg">
-                <!-- Bagian atas -->
+                <!-- Bagian atas tiket -->
                 <div class="ticket-top rounded-t-2xl bg-white p-5 pb-6">
+                    <!-- Departemen + status -->
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0 leading-tight">
                             <p class="text-[11px] text-gray-400">Departemen</p>
@@ -34,6 +38,7 @@
                         </span>
                     </div>
 
+                    <!-- Deskripsi + foto -->
                     <p
                         class="mt-4 text-sm text-gray-900 break-words whitespace-pre-line"
                     >
@@ -47,7 +52,8 @@
                         class="mt-4 mx-auto block h-auto max-h-96 max-w-full rounded-lg"
                     />
 
-                    <div class="flex items-start justify-between gap-3">
+                    <!-- Teknisi, kategori, prioritas -->
+                    <div class="mt-4 flex items-start justify-between gap-3">
                         <div class="min-w-0 leading-tight">
                             <p class="text-[11px] text-gray-400">Teknisi</p>
                             <p
@@ -80,16 +86,17 @@
                     </div>
                 </div>
 
-                <!-- Bagian bawah -->
+                <!-- Bagian bawah tiket -->
                 <div
                     class="ticket-bottom relative rounded-b-2xl bg-white p-5 pt-6"
                 >
-                    <!-- garis sobekan -->
+                    <!-- Garis sobekan -->
                     <div
                         class="absolute inset-x-5 top-0 border-t-2 border-dashed border-gray-200"
                     ></div>
 
-                    <div class="flex items-start justify-between gap-3">
+                    <!-- Tanggal dibuat + keterlambatan -->
+                    <div class="flex items-center justify-between gap-3">
                         <div class="min-w-0 leading-tight">
                             <p class="text-[11px] text-gray-400">Dibuat</p>
                             <p class="text-sm font-semibold text-gray-900">
@@ -99,27 +106,30 @@
 
                         <span
                             v-if="getEtaStatus(ticket)"
-                            class="mt-3 inline-block text-xs font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded-full"
+                            class="inline-block text-xs font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded-full"
                         >
                             {{ getEtaStatus(ticket) }}
                         </span>
                     </div>
 
+                    <!-- Nomor tiket -->
                     <p
                         class="mt-4 text-center font-mono text-xs tracking-wider text-gray-500"
                     >
                         {{ ticket.ticket_number }}
                     </p>
-                    <!-- Tombol batalkan -->
+
+                    <!-- Tombol batalkan (hanya untuk tiket open) -->
                     <button
                         v-if="canCancel"
                         type="button"
-                        @click="isCancelOpen = true"
+                        @click="isCancelModalOpen = true"
                         class="w-full my-4 px-4 py-3 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-full focus:outline-none focus:ring-4 focus:ring-red-200 transition active:scale-95"
                     >
                         Batalkan Tiket
                     </button>
 
+                    <!-- Keterangan kalau tiket tidak bisa dibatalkan -->
                     <p
                         v-else-if="statusMessage"
                         class="my-4 rounded-lg border py-3 text-center text-sm font-medium"
@@ -134,35 +144,161 @@
                 </div>
             </div>
 
-            <!-- Timeline -->
-            <ol class="relative border-s border-default">
-                <li class="mb-7 ms-6">
-                    <span
-                        class="absolute flex items-center justify-center w-5 h-5 bg-amber-200 rounded-full -start-3"
-                    >
-                    </span>
-                    <time
-                        class="bg-neutral-secondary-medium border border-default-medium text-heading text-xs font-medium px-1.5 py-0.5 rounded"
-                        >March 13th, 2025</time
-                    >
-                    <p class="mb-4 text-body text-sm pt-1">
-                        Get access to over 20+ pages including a dashboard
-                        layout, charts, kanban board, calendar, and pre-order
-                        E-commerce & Marketing pages.
-                    </p>
-                </li>
-                <button
-                    type="button"
-                    @click="openAddModal"
-                    class="inline-flex items-center justify-center gap-1.5 h-10 px-4 text-sm font-semibold text-white bg-primary-500 hover:bg-primary-600 border border-transparent rounded-sm shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-medium active:scale-95 transition duration-200"
+            <!-- ==================== KOLOM KANAN: RIWAYAT PELACAKAN ==================== -->
+            <div>
+                <div
+                    v-if="ticket.tracking && ticket.tracking.length > 0"
+                    class="mb-6 ms-2 mt-2"
                 >
-                    <AddIcon size="24" />
-                    <span>Pelacakan</span>
-                </button>
-            </ol>
+                    <div
+                        v-for="(log, index) in ticket.tracking"
+                        :key="log.id"
+                        class="flex gap-3 items-stretch"
+                    >
+                        <!-- Kiri: Tanggal & Waktu -->
+                        <div class="w-12 shrink-0 text-right pt-0.5">
+                            <p class="text-sm font-medium text-gray-700">
+                                {{ getRelativeDay(log.created_at) }}
+                            </p>
+                            <p class="text-[11px] text-gray-500">
+                                {{ formatTime(log.created_at) }}
+                            </p>
+                        </div>
+
+                        <!-- Tengah: Titik & Garis -->
+                        <div class="flex flex-col items-center">
+                            <!-- Titik bulat hijau -->
+                            <div
+                                class="w-2 h-2 bg-emerald-700 rounded-full mt-1.5 shrink-0"
+                            ></div>
+                            <!-- Garis vertikal penghubung (hilang di data paling terakhir) -->
+                            <div
+                                v-if="index !== ticket.tracking.length - 1"
+                                class="w-px flex-1 bg-gray-300 mt-1"
+                            ></div>
+                        </div>
+
+                        <!-- Kanan: Catatan Pelacakan -->
+                        <div class="flex-1 pb-6 pt-0.5">
+                            <p class="text-sm font-medium text-emerald-700">
+                                {{ log.note }}
+                            </p>
+                            <!-- Nama penulis (bisa admin atau teknisi) -->
+                            <p class="text-[10px] text-gray-400 mt-1">
+                                Oleh: {{ log.user ? log.user.name : "Sistem" }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-else class="text-sm text-gray-500 italic mb-6 ms-2">
+                    Belum ada riwayat pelacakan.
+                </div>
+                <!-- Penilaian: hanya muncul kalau tiket sudah selesai -->
+                <div v-if="ticket.status === 'done'" class="mb-5 ms-2">
+                    <p class="mb-2.5 text-sm font-medium text-gray-700">
+                        Penilaian Tiket
+                    </p>
+
+                    <form @submit.prevent="submitReview" class="space-y-4">
+                        <div>
+                            <label
+                                v-if="!ticket.review"
+                                class="block mb-2 text-sm font-medium text-gray-700"
+                                >Beri Rating:</label
+                            >
+
+                            <!-- Satu baris bintang untuk dua mode: form (bisa diklik) dan read-only (sudah dinilai) -->
+                            <div
+                                class="flex items-center space-x-1"
+                                @mouseleave="hoverRating = 0"
+                            >
+                                <StarIcon
+                                    size="24"
+                                    v-for="star in 5"
+                                    :key="star"
+                                    @click="
+                                        !ticket.review && (form.rating = star)
+                                    "
+                                    @mouseenter="
+                                        !ticket.review && (hoverRating = star)
+                                    "
+                                    :class="[
+                                        'w-8 h-8 transition-colors duration-200',
+                                        ticket.review ? '' : 'cursor-pointer',
+                                        star <= displayRating
+                                            ? 'text-yellow-400'
+                                            : 'text-gray-300',
+                                    ]"
+                                />
+                            </div>
+
+                            <span
+                                v-if="form.errors.rating"
+                                class="mt-1 block text-sm text-red-500"
+                            >
+                                {{ form.errors.rating }}
+                            </span>
+                        </div>
+
+                        <!-- Tag: bisa dipilih kalau belum dinilai, hanya tampil tag terpilih kalau sudah -->
+                        <div
+                            v-if="!ticket.review || ticket.review.tags?.length"
+                        >
+                            <label
+                                v-if="!ticket.review"
+                                class="block mb-2 text-sm font-medium text-gray-700"
+                                >Tag (opsional):</label
+                            >
+                            <div class="flex flex-wrap gap-2">
+                                <template v-if="ticket.review">
+                                    <span
+                                        v-for="tag in ticket.review.tags"
+                                        :key="tag"
+                                        class="rounded-full border border-gray-300 bg-gray-50 px-3 py-1 text-xs text-gray-700"
+                                    >
+                                        {{ tag }}
+                                    </span>
+                                </template>
+                                <template v-else>
+                                    <button
+                                        v-for="tag in reviewTags"
+                                        :key="tag"
+                                        type="button"
+                                        @click="toggleTag(tag)"
+                                        :class="[
+                                            'rounded-full border px-3 py-1 text-xs transition active:scale-95',
+                                            form.tags.includes(tag)
+                                                ? 'border-amber-600 bg-amber-600 text-white'
+                                                : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
+                                        ]"
+                                    >
+                                        {{ tag }}
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+
+                        <button
+                            v-if="!ticket.review"
+                            type="submit"
+                            :disabled="form.processing"
+                            class="w-full my-4 px-4 py-3 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-full focus:outline-none focus:ring-4 focus:ring-red-200 transition active:scale-95"
+                        >
+                            {{
+                                form.processing
+                                    ? "Menyimpan..."
+                                    : "Kirim Rating"
+                            }}
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
 
-        <!-- Modal konfirmasi batalkan -->
+        <!-- ==================== MODAL ==================== -->
+
+        <!-- Modal konfirmasi batalkan tiket -->
         <Transition
             enter-active-class="transition ease-out duration-200"
             enter-from-class="opacity-0"
@@ -172,12 +308,12 @@
             leave-to-class="opacity-0"
         >
             <div
-                v-if="isCancelOpen"
+                v-if="isCancelModalOpen"
                 class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
                 role="alertdialog"
                 aria-modal="true"
                 aria-labelledby="cancel-title"
-                @click.self="closeCancel"
+                @click.self="closeCancelModal"
             >
                 <div
                     class="w-full max-w-sm bg-white rounded-2xl shadow-lg p-5 text-center"
@@ -199,7 +335,7 @@
                     <div class="mt-6 flex gap-3">
                         <button
                             type="button"
-                            @click="closeCancel"
+                            @click="closeCancelModal"
                             :disabled="cancelForm.processing"
                             class="flex-1 h-10 px-4 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full transition active:scale-95 disabled:opacity-60"
                         >
@@ -221,145 +357,33 @@
                 </div>
             </div>
         </Transition>
-
-        <!-- Modal Tambah/Edit tracking -->
-        <!-- Modal tambah/edit -->
-        <Transition
-            enter-active-class="transition ease-out duration-200"
-            enter-from-class="opacity-0"
-            enter-to-class="opacity-100"
-            leave-active-class="transition ease-in duration-150"
-            leave-from-class="opacity-100"
-            leave-to-class="opacity-0"
-        >
-            <div
-                v-if="isModalOpen"
-                class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="modal-title"
-                @click.self="closeModal"
-            >
-                <div
-                    class="relative w-full max-w-md bg-neutral-primary-soft rounded-sm border border-default shadow-lg p-5"
-                >
-                    <div class="flex justify-between items-center pb-2">
-                        <h3
-                            id="modal-title"
-                            class="text-lg font-medium text-heading"
-                        >
-                            {{
-                                editingId
-                                    ? "Edit Departemen"
-                                    : "Tambah Departemen"
-                            }}
-                        </h3>
-                        <button
-                            type="button"
-                            @click="closeModal"
-                            class="text-body bg-transparent hover:text-heading hover:bg-neutral-tertiary rounded-sm w-9 h-9 flex items-center justify-center ms-auto transition-all duration-200 ease-in-out active:scale-95"
-                        >
-                            <CloseIcon size="24" />
-                            <span class="sr-only">Close modal</span>
-                        </button>
-                    </div>
-
-                    <form @submit.prevent="handleTrackingSubmit">
-                        <div class="grid gap-4 grid-cols-2 py-2">
-                            <div class="col-span-2">
-                                <label
-                                    for="kode"
-                                    class="block mb-2.5 text-sm font-medium text-heading"
-                                >
-                                    Status
-                                </label>
-                                <input
-                                    type="text"
-                                    id="kode"
-                                    v-model="form.department_code"
-                                    class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-sm focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                                    required
-                                />
-                                <span
-                                    v-if="form.errors.department_code"
-                                    class="text-xs text-red-500 mt-1 block"
-                                >
-                                    {{ form.errors.department_code }}
-                                </span>
-                            </div>
-                            <div class="col-span-2">
-                                <label
-                                    for="nama"
-                                    class="block mb-2.5 text-sm font-medium text-heading"
-                                >
-                                    Keterangan
-                                </label>
-                                <input
-                                    type="text"
-                                    id="nama"
-                                    v-model="form.department_name"
-                                    class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-sm focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                                    required
-                                />
-                                <span
-                                    v-if="form.errors.department_name"
-                                    class="text-xs text-red-500 mt-1 block"
-                                >
-                                    {{ form.errors.department_name }}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div
-                            class="flex justify-end items-center gap-3 border-default pt-4 mt-2"
-                        >
-                            <button
-                                type="button"
-                                @click="closeModal"
-                                class="text-body bg-neutral-secondary-medium border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading shadow-xs font-medium leading-5 rounded-full text-sm px-4 py-3 focus:outline-none transition-all duration-200 ease-in-out active:scale-95"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                :disabled="form.processing"
-                                class="inline-flex items-center text-white bg-primary-500 hover:bg-primary-600 border border-transparent shadow-xs font-medium leading-5 rounded-full text-sm px-4 py-3 focus:outline-none transition-all duration-200 ease-in-out active:scale-95 disabled:opacity-60"
-                            >
-                                {{
-                                    form.processing
-                                        ? editingId
-                                            ? "Updating..."
-                                            : "Saving..."
-                                        : editingId
-                                          ? "Update"
-                                          : "Simpan"
-                                }}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </Transition>
     </main>
 </template>
 
 <script setup>
 import { ref, computed } from "vue";
 import { useForm, usePage, router } from "@inertiajs/vue3";
+import { AddIcon } from "@solar-icons/vue/bold/add";
 import NavUser from "../../Layouts/NavUser.vue";
+import { StarIcon } from "@solar-icons/vue/bold/star";
 
+// ==================== DATA DARI CONTROLLER ====================
 const props = defineProps({
     ticket: Object,
 });
 
+// ==================== USER YANG SEDANG LOGIN ====================
 const page = usePage();
 const user = computed(() => page.props.auth.user);
 
-// Batalkan tiket
-const isCancelOpen = ref(false);
+// ==================== BATALKAN TIKET ====================
+const isCancelModalOpen = ref(false);
 const cancelForm = useForm({});
 
-const canCancel = computed(() => ["open"].includes(props.ticket.status));
+// Tiket hanya bisa dibatalkan selama statusnya masih open
+const canCancel = computed(() => props.ticket.status === "open");
+
+// Keterangan yang tampil kalau tiket tidak bisa dibatalkan
 const statusMessage = computed(() => {
     switch (props.ticket.status) {
         case "cancelled":
@@ -374,20 +398,21 @@ const statusMessage = computed(() => {
             return "";
     }
 });
-const closeCancel = () => {
-    if (!cancelForm.processing) isCancelOpen.value = false;
+
+const closeCancelModal = () => {
+    if (!cancelForm.processing) isCancelModalOpen.value = false;
 };
 
 const cancelTicket = () => {
     cancelForm.put(`/user/ticket/${props.ticket.id}`, {
         onSuccess: () => {
-            isCancelOpen.value = false;
+            isCancelModalOpen.value = false;
             router.visit("/user/home");
         },
     });
 };
 
-// Warna badge
+// ==================== TAMPILAN: WARNA BADGE ====================
 const priorityClasses = {
     low: "bg-sky-100 text-sky-800 border border-sky-300",
     medium: "bg-amber-200 text-amber-900 border border-amber-400",
@@ -419,7 +444,7 @@ const getStatusClass = (status) => {
     }
 };
 
-// Tanggal dan keterlambatan
+// ==================== TAMPILAN: TANGGAL & KETERLAMBATAN ====================
 const formatDate = (date) => {
     if (!date) return "-";
     return new Date(date).toLocaleDateString("id-ID", {
@@ -445,6 +470,69 @@ const getEtaStatus = (ticket) => {
     if (diffInHours >= 24)
         return `Lebih lambat ${Math.floor(diffInHours / 24)} hari`;
     return `Lebih lambat ${diffInHours} jam`;
+};
+
+// ==================== RIWAYAT PELACAKAN ====================
+// Kalau tiket belum punya riwayat, pakai array kosong supaya tidak error
+const trackings = computed(() => props.ticket.tracking ?? []);
+
+// Menampilkan "Hari ini", "Kemarin", atau tanggal singkat (misal 13 Okt)
+const getRelativeDay = (dateString) => {
+    if (!dateString) return "-";
+
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) return "Hari ini";
+    if (date.toDateString() === yesterday.toDateString()) return "Kemarin";
+
+    return date.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+};
+
+// Menampilkan jam dengan format 14:30
+const formatTime = (dateString) => {
+    if (!dateString) return "-";
+    return new Date(dateString)
+        .toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
+        .replace(".", ":");
+};
+
+// ==================== RATING ====================
+const reviewTags = [
+    "Cepat",
+    "Ramah",
+    "Solusi tepat",
+    "Komunikatif",
+    "Lambat",
+    "Kurang jelas",
+];
+
+const hoverRating = ref(0);
+
+const form = useForm({
+    ticket_id: props.ticket.id,
+    rating: 0,
+    tags: [],
+});
+
+// Bintang yang menyala: rating tersimpan kalau sudah dinilai, kalau belum ikut hover/pilihan
+const displayRating = computed(() =>
+    props.ticket.review
+        ? props.ticket.review.rating
+        : hoverRating.value || form.rating,
+);
+
+const toggleTag = (tag) => {
+    const i = form.tags.indexOf(tag);
+    i === -1 ? form.tags.push(tag) : form.tags.splice(i, 1);
+};
+
+const submitReview = () => {
+    // Setelah sukses, Inertia memuat ulang props sehingga ticket.review terisi
+    // dan tampilan otomatis berubah jadi read-only
+    form.post("/user/reviews", { preserveScroll: true });
 };
 </script>
 

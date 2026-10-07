@@ -218,6 +218,7 @@
 
 <script setup>
 import { computed, ref, watch } from "vue";
+import Swal from "sweetalert2";
 import NavAdmin from "../../Layouts/NavAdmin.vue";
 import { MinimalisticMagnifierIcon } from "@solar-icons/vue/linear/minimalistic-magnifier";
 

@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\User\TicketController;
 use App\Http\Controllers\User\HomeController as UserHomeController;
+use App\Http\Controllers\User\ReviewController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -16,14 +17,6 @@ Route::get('/', function () {
 
 Route::get('/welcome', function () {
     return Inertia::render('Welcome');
-});
-
-Route::get('/about', function () {
-    return Inertia::render('About');
-});
-
-Route::get('/pengajuantiket', function () {
-    return Inertia::render('User/PengajuanTiket');
 });
 
 Route::middleware(['auth','it_support'])->prefix('admin')->group(function() {
@@ -40,6 +33,11 @@ Route::middleware(['auth','it_support'])->prefix('admin')->group(function() {
     Route::put('/ticket/{ticket}', [AdminTicketController::class, 'update'])->name('admin.tickets.update');
     Route::get('/ticket/{ticket}', [AdminTicketController::class, 'show'])->name('admin.tickets.show');
     Route::get('/history', [AdminTicketController::class, 'history'])->name('admin.tickets.history');
+    Route::post('/ticket/{ticket}/tracking',[AdminTicketController::class,'storeTracking'])->name('admin.tickets.tracking');
+    Route::delete('/ticket/{ticket}/tracking/{tracking}',[AdminTicketController::class,'destroy'])->name('admin.tracking.destroy');
+    Route::put('/ticket/{ticket}/tracking/{tracking}',[AdminTicketController::class,'updateTracking'])->name('admin.tracking.update');
+    Route::put('/ticket/{ticket}/done', [AdminTicketController::class, 'done'])
+    ->name('admin.ticket.done');
 });
 
 Route::middleware('guest')->group(function () {
@@ -58,6 +56,7 @@ Route::middleware('auth')->prefix('user')->group(function() {
     Route::post('/ticket', [TicketController::class, 'store'])->name('user.ticket.store');
     Route::put('/ticket/{ticket}', [TicketController::class, 'update'])->name('user.ticket.update');
     Route::get('/ticket/{ticket}', [TicketController::class, 'show'])->name('user.ticket.show');
+    Route::post('/reviews', [ReviewController::class, 'store']);
 });
 // nanti pas udah bikin controller buat tiket, route ini bisa diaktifin lagi
 // Route::middleware('auth')->group(function () {

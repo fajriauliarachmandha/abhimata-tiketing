@@ -9,12 +9,13 @@
             </h1>
         </div>
 
-        <form @submit.prevent="submit" class="max-w-md mx-auto my-7 px-4">
+        <form @submit.prevent="submit" class="mx-auto my-7 px-4">
             <div class="mb-5">
                 <label
                     for="departement"
                     class="block mb-2.5 text-sm font-medium text-heading"
-                    >Departement</label
+                    >Departement
+                    <span class="text-xs text-red-500"> * </span></label
                 >
                 <input
                     type="text"
@@ -29,7 +30,9 @@
 
             <div class="mb-5">
                 <label class="block mb-2.5 text-sm font-medium text-heading">
-                    Kategori Kendala
+                    Kategori Kendala<span class="text-xs text-red-500">
+                        *
+                    </span>
                 </label>
                 <div class="flex flex-wrap gap-2">
                     <label
@@ -61,7 +64,9 @@
 
             <div class="mb-5">
                 <label class="block mb-2.5 text-sm font-medium text-heading">
-                    Tingkat Prioritas
+                    Tingkat Prioritas<span class="text-xs text-red-500">
+                        *
+                    </span>
                 </label>
 
                 <div class="flex flex-wrap gap-2">
@@ -158,7 +163,9 @@
                 <label
                     for="deskripsi"
                     class="block mb-2.5 text-sm font-medium text-heading"
-                    >Deskripsi</label
+                    >Deskripsi<span class="text-xs text-red-500">
+                        *
+                    </span></label
                 >
                 <textarea
                     id="deskripsi"
@@ -187,9 +194,33 @@
 </template>
 
 <script setup>
-import { ref, onBeforeUnmount, computed } from "vue";
+import { ref, onBeforeUnmount, computed, watch } from "vue";
 import NavUser from "../../Layouts/NavUser.vue";
 import { useForm, usePage } from "@inertiajs/vue3";
+import Swal from "sweetalert2";
+
+// ==================== NOTIFIKASI (SWEETALERT) ====================
+const page = usePage();
+
+const Toast = Swal.mixin({
+    toast: true,
+    position: "top-end",
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+});
+
+// Pesan dari controller (->with('success'/'error', ...)) tampil sebagai toast
+watch(
+    () => page.props.flash,
+    (flash) => {
+        if (flash?.success)
+            Toast.fire({ icon: "success", title: flash.success });
+        if (flash?.error) Toast.fire({ icon: "error", title: flash.error });
+    },
+    { deep: true },
+);
+// ================================================
 
 const categoryOptions = [
     { label: "Hardware", value: "Hardware" },
@@ -261,8 +292,18 @@ const submit = () => {
             form.reset();
             previewUrl.value = null;
         },
+        onError: (errors) => {
+            // modal tetap terbuka supaya data tidak hilang
+            Swal.fire({
+                icon: "error",
+                title: "Gagal mengajukan tiket",
+                text:
+                    Object.values(errors)[0] ??
+                    "Periksa kembali data yang diisi.",
+            });
+        },
     });
 };
-const page = usePage();
+
 const user = computed(() => page.props.auth.user);
 </script>

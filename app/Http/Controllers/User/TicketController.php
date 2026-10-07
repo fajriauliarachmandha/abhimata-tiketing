@@ -13,7 +13,7 @@ class TicketController extends Controller
 {
     public function index(){
         return Inertia::render('User/Ticket', [
-            'tickets' => Ticket::where('created_by', Auth::id())->with(['department', 'creator', 'technician'])->latest()->get()
+            'tickets' => Ticket::where('created_by', Auth::id())->with(['department', 'creator', 'technician','tracking.user'])->latest()->get()
         ]);
     }
 
@@ -53,8 +53,9 @@ class TicketController extends Controller
 
     public function show(Ticket $ticket)
     {
+        abort_unless($ticket->created_by === Auth::id(), 403);
         return Inertia::render('User/TicketDetail', [
-            'ticket' => $ticket->load('creator', 'department', 'technician')
+            'ticket' => $ticket->load('creator', 'department', 'technician','tracking.user','review')
         ]);
     }
 

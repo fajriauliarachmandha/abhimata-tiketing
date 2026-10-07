@@ -20,12 +20,12 @@
                                 : "Departemen IT Support"
                         }}
                     </div>
-                    <span
+                    <!-- <span
                         class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 text-xs font-medium px-1.5 py-0.5 rounded-full"
                     >
                         <StarIcon size="12" />
                         17 Stars
-                    </span>
+                    </span> -->
                 </div>
             </div>
 
@@ -214,7 +214,6 @@ const filteredTickets = computed(() => {
 
 // Warna
 const getPriorityClass = (priority) => {
-    console.log(JSON.stringify(priority));
     switch (priority) {
         case "Low":
             return "bg-yellow-100 text-yellow-800 ";

@@ -43,6 +43,8 @@ class Ticket extends Model
     }
 
     public function tracking(){
-        return $this->belongsTo(Tracking::class)->latest();
+        return $this->hasMany(Tracking::class)->latest();
     }
+
+    public function review() { return $this->hasOne(Review::class); }
 }
