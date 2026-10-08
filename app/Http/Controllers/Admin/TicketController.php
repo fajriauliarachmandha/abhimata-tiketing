@@ -87,7 +87,8 @@ class TicketController extends Controller
         abort_unless($ticket->status === 'in progress', 403);
         abort_unless((int) $ticket->assigned_to === auth()->id(), 403);
 
-        $ticket->update(['status' => 'done']);
+        $ticket->update(['status' => 'done',
+        'resolved_at'=>now()]);
 
         return back();
     }

@@ -1,31 +1,27 @@
 <template>
-    <div
-        class="min-h-screen bg-gray-100 flex justify-center font-sans text-gray-900"
-    >
+    <div class="min-h-screen xl:flex">
+        <app-sidebar />
+        <Backdrop />
         <div
-            class="w-full max-w-md bg-white min-h-screen shadow-2xl relative flex flex-col"
+            class="flex-1 transition-all duration-300 ease-in-out"
+            :class="[
+                isExpanded || isHovered ? 'xl:ms-[290px]' : 'xl:ms-[90px]',
+            ]"
         >
-            <main class="flex-1 p-4 pb-20 overflow-hidden">
-                <Transition
-                    mode="out-in"
-                    enter-active-class="transition duration-200 ease-out"
-                    enter-from-class="opacity-0 translate-x-2"
-                    enter-to-class="opacity-100 translate-x-0"
-                    leave-active-class="transition duration-150 ease-in"
-                    leave-from-class="opacity-100"
-                    leave-to-class="opacity-0"
-                >
-                    <div :key="$page.url">
-                        <slot />
-                    </div>
-                </Transition>
-            </main>
-
-            <NavUser />
+            <app-header />
+            <div
+                class="mx-auto max-w-(--breakpoint-2xl) p-4 pb-20 md:p-6 md:pb-6"
+            >
+                <slot></slot>
+            </div>
         </div>
     </div>
 </template>
 
-<script setup>
-import NavUser from "./NavUser.vue";
+<script setup lang="ts">
+import AppSidebar from "./AppSidebar.vue";
+import AppHeader from "./AppHeader.vue";
+import { useSidebar } from "@/composables/useSidebar";
+import Backdrop from "./Backdrop.vue";
+const { isExpanded, isHovered } = useSidebar();
 </script>

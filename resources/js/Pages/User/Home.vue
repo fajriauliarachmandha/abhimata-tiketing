@@ -1,177 +1,197 @@
 <template>
-    <NavUser />
-    <main class="min-h-screen bg-gray-100 px-4 pt-20 pb-6 lg:ms-64 lg:pt-24">
-        <!-- Header: profil (kiri) + filter (kanan di laptop) -->
-        <div class="lg:flex lg:items-center lg:justify-between lg:gap-6">
-            <div class="flex items-center gap-2.5 ps-0.5">
-                <img
-                    :src="avatarUrl"
-                    alt="avatar"
-                    class="w-10 h-10 lg:w-14 lg:h-14 rounded-full ring-2 ring-green-500"
-                />
-                <div class="leading-tight">
-                    <div class="font-bold text-sm lg:text-lg text-heading">
-                        Hallo, {{ user.name }}
-                    </div>
-                    <div class="text-xs lg:text-sm text-body">
-                        {{
-                            user.role === "department"
-                                ? user.department?.department_name
-                                : "Departemen IT Support"
-                        }}
-                    </div>
-                    <!-- <span
+    <UserLayout>
+        <main>
+            <!-- Header: profil (kiri) + filter (kanan di laptop) -->
+            <div class="lg:flex lg:items-center lg:justify-between lg:gap-6">
+                <div class="flex items-center gap-2.5 ps-0.5">
+                    <img
+                        :src="avatarUrl"
+                        alt="avatar"
+                        class="w-10 h-10 lg:w-14 lg:h-14 rounded-full ring-2 ring-green-500"
+                    />
+                    <div class="leading-tight">
+                        <div class="font-bold text-sm lg:text-lg text-heading">
+                            Hallo, {{ user.name }}
+                        </div>
+                        <div class="text-xs lg:text-sm text-body">
+                            {{
+                                user.role === "department"
+                                    ? user.department?.department_name
+                                    : "Departemen IT Support"
+                            }}
+                        </div>
+                        <!-- <span
                         class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 text-xs font-medium px-1.5 py-0.5 rounded-full"
                     >
                         <StarIcon size="12" />
                         17 Stars
                     </span> -->
+                    </div>
+                </div>
+
+                <!-- Filter -->
+                <div
+                    class="sticky top-[72px] z-10 flex gap-2 py-2 -mx-4 px-4 overflow-x-auto lg:static lg:mx-0 lg:px-0 lg:py-0 lg:overflow-visible"
+                >
+                    <button
+                        v-for="status in statusFilter"
+                        :key="status.value"
+                        type="button"
+                        @click="activeFilter = status.value"
+                        class="px-3 py-2 text-xs lg:text-sm rounded-full whitespace-nowrap transition active:scale-95"
+                        :class="
+                            activeFilter === status.value
+                                ? 'bg-dark text-white'
+                                : 'bg-white text-gray-700 hover:bg-gray-200'
+                        "
+                    >
+                        {{ status.label }}
+                    </button>
                 </div>
             </div>
 
-            <!-- Filter -->
             <div
-                class="sticky top-[72px] z-10 flex gap-2 py-2 -mx-4 px-4 overflow-x-auto lg:static lg:mx-0 lg:px-0 lg:py-0 lg:overflow-visible"
+                class="pt-4 pb-4 font-semibold text-lg lg:text-2xl text-heading"
             >
-                <button
-                    v-for="status in statusFilter"
-                    :key="status.value"
-                    type="button"
-                    @click="activeFilter = status.value"
-                    class="px-3 py-2 text-xs lg:text-sm rounded-full whitespace-nowrap transition active:scale-95"
-                    :class="
-                        activeFilter === status.value
-                            ? 'bg-dark text-white'
-                            : 'bg-white text-gray-700 hover:bg-gray-200'
-                    "
-                >
-                    {{ status.label }}
-                </button>
+                Daftar Order
             </div>
-        </div>
 
-        <div class="pt-4 pb-4 font-semibold text-lg lg:text-2xl text-heading">
-            Daftar Order
-        </div>
-
-        <ul
-            class="max-w-md space-y-4 lg:max-w-none lg:space-y-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-4"
-        >
-            <li
-                v-if="filteredTickets.length === 0"
-                class="py-6 text-center text-sm text-body lg:col-span-full"
+            <ul
+                class="max-w-md space-y-4 lg:max-w-none lg:space-y-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-4"
             >
-                Belum ada perbaikan.
-            </li>
+                <li
+                    v-if="filteredTickets.length === 0"
+                    class="py-6 text-center text-sm text-body dark:text-gray-400 lg:col-span-full"
+                >
+                    Belum ada perbaikan.
+                </li>
 
-            <li
-                v-for="ticket in filteredTickets"
-                :key="ticket.id"
-                class="h-full"
-            >
-                <Link :href="`/user/ticket/${ticket.id}`" class="block h-full">
-                    <!-- drop-shadow di pembungkus, supaya bayangan ikut bentuk berlekuk -->
-                    <div class="flex h-full flex-col drop-shadow-lg">
-                        <!-- Bagian atas -->
+                <li
+                    v-for="ticket in filteredTickets"
+                    :key="ticket.id"
+                    class="h-full"
+                >
+                    <Link
+                        :href="`/user/ticket/${ticket.id}`"
+                        class="block h-full"
+                    >
+                        <!-- drop-shadow di pembungkus, supaya bayangan ikut bentuk berlekuk -->
                         <div
-                            class="ticket-top flex flex-1 flex-col rounded-t-2xl bg-white p-5 pb-6"
+                            class="flex h-full flex-col drop-shadow-lg dark:drop-shadow-none"
                         >
-                            <div class="flex items-start justify-between gap-3">
-                                <div class="min-w-0 leading-tight">
-                                    <p class="text-[11px] text-gray-400">
-                                        Departemen
+                            <!-- Bagian atas -->
+                            <div
+                                class="ticket-top flex flex-1 flex-col rounded-t-2xl bg-white dark:bg-gray-800 p-5 pb-6"
+                            >
+                                <div
+                                    class="flex items-start justify-between gap-3"
+                                >
+                                    <div class="min-w-0 leading-tight">
+                                        <p
+                                            class="text-[11px] text-gray-400 dark:text-gray-500"
+                                        >
+                                            Departemen
+                                        </p>
+                                        <p
+                                            class="text-sm font-semibold text-gray-900 dark:text-white truncate"
+                                        >
+                                            {{
+                                                user.role === "department"
+                                                    ? user.department
+                                                          ?.department_name
+                                                    : "Departemen IT Support"
+                                            }}
+                                        </p>
+                                    </div>
+                                    <span
+                                        class="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full"
+                                        :class="getStatusClass(ticket.status)"
+                                    >
+                                        {{ ticket.status }}
+                                    </span>
+                                </div>
+
+                                <p
+                                    class="mt-2 text-sm text-gray-900 dark:text-gray-200 break-words line-clamp-3"
+                                >
+                                    {{ ticket.description }}
+                                </p>
+
+                                <span
+                                    class="inline-flex w-fit items-center gap-1.5 rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 mt-1"
+                                >
+                                    <ProgrammingIcon size="15" />
+                                    {{ ticket.category }}
+                                </span>
+
+                                <div class="mt-auto pt-1 leading-tight">
+                                    <p
+                                        class="text-[11px] text-gray-400 dark:text-gray-500"
+                                    >
+                                        Teknisi
                                     </p>
                                     <p
-                                        class="text-sm font-semibold text-gray-900 truncate"
+                                        class="text-sm font-semibold text-gray-900 dark:text-white"
                                     >
                                         {{
-                                            user.role === "department"
-                                                ? user.department
-                                                      ?.department_name
-                                                : "Departemen IT Support"
+                                            ticket.technician
+                                                ? ticket.technician.name
+                                                : "Belum ada teknisi"
                                         }}
                                     </p>
                                 </div>
-                                <span
-                                    class="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full"
-                                    :class="getStatusClass(ticket.status)"
-                                >
-                                    {{ ticket.status }}
-                                </span>
                             </div>
 
-                            <p
-                                class="mt-2 text-sm text-gray-900 break-words line-clamp-3"
+                            <!-- Bagian bawah -->
+                            <div
+                                class="ticket-bottom relative rounded-b-2xl bg-white dark:bg-gray-800 p-5 pt-6"
                             >
-                                {{ ticket.description }}
-                            </p>
+                                <!-- garis putus-putus, tepat di batas kedua bagian -->
+                                <div
+                                    class="absolute inset-x-5 top-0 border-t-2 border-dashed border-gray-200 dark:border-gray-700"
+                                ></div>
 
-                            <span
-                                class="inline-flex w-fit items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 mt-1"
-                            >
-                                <ProgrammingIcon size="15" />
-                                {{ ticket.category }}
-                            </span>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span
+                                        class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300"
+                                    >
+                                        <CalendarIcon size="15" />
+                                        {{ formatDate(ticket.created_at) }}
+                                    </span>
+                                    <span
+                                        v-if="getEtaStatus(ticket)"
+                                        class="inline-flex items-center gap-1.5 rounded-full bg-red-100 dark:bg-red-900/40 px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-400"
+                                    >
+                                        <ClockCircleIcon size="15" />
+                                        {{ getEtaStatus(ticket) }}
+                                    </span>
+                                </div>
 
-                            <div class="mt-auto pt-1 leading-tight">
-                                <p class="text-[11px] text-gray-400">Teknisi</p>
-                                <p class="text-sm font-semibold text-gray-900">
-                                    {{
-                                        ticket.technician
-                                            ? ticket.technician.name
-                                            : "Belum ada teknisi"
-                                    }}
-                                </p>
+                                <div
+                                    class="mt-1 flex items-center justify-between gap-2"
+                                >
+                                    <span
+                                        class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium"
+                                        :class="
+                                            getPriorityClass(ticket.priority)
+                                        "
+                                    >
+                                        <DangerTriangleIcon size="15" />
+                                        Prioritas: {{ ticket.priority }}
+                                    </span>
+                                    <p
+                                        class="mt-4 text-center font-mono text-xs tracking-wider text-gray-500 dark:text-gray-400"
+                                    >
+                                        {{ ticket.ticket_number }}
+                                    </p>
+                                </div>
                             </div>
                         </div>
-
-                        <!-- Bagian bawah -->
-                        <div
-                            class="ticket-bottom relative rounded-b-2xl bg-white p-5 pt-6"
-                        >
-                            <!-- garis putus-putus, tepat di batas kedua bagian -->
-                            <div
-                                class="absolute inset-x-5 top-0 border-t-2 border-dashed border-gray-200"
-                            ></div>
-
-                            <div class="flex flex-wrap items-center gap-2">
-                                <span
-                                    class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700"
-                                >
-                                    <CalendarIcon size="15" />
-                                    {{ formatDate(ticket.created_at) }}
-                                </span>
-                                <span
-                                    v-if="getEtaStatus(ticket)"
-                                    class="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-3 py-1.5 text-xs font-medium text-red-700"
-                                >
-                                    <ClockCircleIcon size="15" />
-                                    {{ getEtaStatus(ticket) }}
-                                </span>
-                            </div>
-
-                            <div
-                                class="mt-1 flex items-center justify-between gap-2"
-                            >
-                                <span
-                                    class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium"
-                                    :class="getPriorityClass(ticket.priority)"
-                                >
-                                    <DangerTriangleIcon size="15" />
-                                    Prioritas: {{ ticket.priority }}
-                                </span>
-                                <p
-                                    class="mt-4 text-center font-mono text-xs tracking-wider text-gray-500"
-                                >
-                                    {{ ticket.ticket_number }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </Link>
-            </li>
-        </ul>
-    </main>
+                    </Link>
+                </li>
+            </ul>
+        </main>
+    </UserLayout>
 </template>
 
 <script setup>
@@ -182,7 +202,7 @@ import { ProgrammingIcon } from "@solar-icons/vue/bold/programming";
 import { CalendarIcon } from "@solar-icons/vue/bold/calendar";
 import { ClockCircleIcon } from "@solar-icons/vue/bold/clock-circle";
 import { DangerTriangleIcon } from "@solar-icons/vue/bold/danger-triangle";
-import NavUser from "../../Layouts/NavUser.vue";
+import UserLayout from "../../Layouts/UserLayout.vue";
 
 const props = defineProps({
     tickets: Array,
