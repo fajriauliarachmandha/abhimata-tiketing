@@ -33,9 +33,9 @@
 
             <!-- ==================== TABEL DEPARTEMEN ==================== -->
             <div
-                class="relative overflow-x-auto bg-neutral-primary-soft shadow-xs border border-default rounded-sm"
+                class="relative max-w-full overflow-x-auto bg-neutral-primary-soft shadow-xs border border-default rounded-sm"
             >
-                <table class="w-full text-sm text-left text-body">
+                <table class="w-full min-w-[720px] text-sm text-left text-body">
                     <thead
                         class="text-sm text-body bg-neutral-secondary-medium border-b border-t border-default-medium"
                     >

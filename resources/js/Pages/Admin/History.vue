@@ -93,10 +93,10 @@
 
             <!-- Table Container -->
             <div
-                class="relative overflow-x-auto bg-neutral-primary-soft shadow-xs rounded-sm border border-default"
+                class="relative max-w-full overflow-x-auto bg-neutral-primary-soft shadow-xs rounded-sm border border-default"
             >
                 <table
-                    class="w-full text-sm text-left rtl:text-right text-body"
+                    class="w-full min-w-[720px] text-sm text-left rtl:text-right text-body"
                 >
                     <thead
                         class="text-sm text-body bg-neutral-secondary-medium border-b border-t border-default-medium"

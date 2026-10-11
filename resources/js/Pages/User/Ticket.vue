@@ -205,7 +205,6 @@ import { ref, onBeforeUnmount, computed, watch } from "vue";
 import UserLayout from "../../Layouts/UserLayout.vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import Swal from "sweetalert2";
-import UserLayout from "../../Layouts/UserLayout.vue";
 
 // ==================== NOTIFIKASI (SWEETALERT) ====================
 const page = usePage();

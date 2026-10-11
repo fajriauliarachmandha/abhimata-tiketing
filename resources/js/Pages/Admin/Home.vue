@@ -50,6 +50,83 @@
                 </div>
             </div>
 
+            <!-- ==================== CHART ==================== -->
+            <div class="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-2">
+                <!-- Tiket per bulan -->
+                <div
+                    class="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/[0.03]"
+                >
+                    <div class="mb-4 flex items-center justify-between gap-3">
+                        <div>
+                            <h3
+                                class="text-lg font-semibold text-gray-800 dark:text-white/90"
+                            >
+                                Tiket per Bulan
+                            </h3>
+                            <p
+                                class="text-theme-sm text-gray-500 dark:text-gray-400"
+                            >
+                                Jumlah pengajuan tiket tahun {{ chart.year }}
+                            </p>
+                        </div>
+                        <select
+                            v-model.number="selectedYear"
+                            @change="changeYear"
+                            class="h-10 rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+                        >
+                            <option
+                                v-for="year in chart.years"
+                                :key="year"
+                                :value="year"
+                            >
+                                {{ year }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <VueApexCharts
+                        :key="`monthly-${chart.year}`"
+                        type="bar"
+                        height="280"
+                        :options="monthlyOptions"
+                        :series="monthlySeries"
+                    />
+                </div>
+
+                <!-- Departemen terbanyak -->
+                <div
+                    class="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/[0.03]"
+                >
+                    <div class="mb-4">
+                        <h3
+                            class="text-lg font-semibold text-gray-800 dark:text-white/90"
+                        >
+                            Departemen Terbanyak Mengajukan Tiket
+                        </h3>
+                        <p
+                            class="text-theme-sm text-gray-500 dark:text-gray-400"
+                        >
+                            5 teratas tahun {{ chart.year }}
+                        </p>
+                    </div>
+
+                    <VueApexCharts
+                        v-if="chart.departments.length > 0"
+                        :key="`dept-${chart.year}`"
+                        type="bar"
+                        height="280"
+                        :options="departmentOptions"
+                        :series="departmentSeries"
+                    />
+                    <p
+                        v-else
+                        class="flex h-[280px] items-center justify-center text-sm text-gray-500 dark:text-gray-400"
+                    >
+                        Belum ada tiket di tahun {{ chart.year }}.
+                    </p>
+                </div>
+            </div>
+
             <div
                 class="pt-4 pb-4 font-semibold text-lg lg:text-2xl text-heading"
             >
@@ -192,15 +269,17 @@
 
 <script setup>
 import { computed, ref } from "vue";
-import { Link, usePage } from "@inertiajs/vue3";
+import { Link, router, usePage } from "@inertiajs/vue3";
 import { ProgrammingIcon } from "@solar-icons/vue/bold/programming";
 import { CalendarIcon } from "@solar-icons/vue/bold/calendar";
 import { ClockCircleIcon } from "@solar-icons/vue/bold/clock-circle";
 import { DangerTriangleIcon } from "@solar-icons/vue/bold/danger-triangle";
 import AdminLayout from "../../Layouts/AdminLayout.vue";
+import VueApexCharts from "vue3-apexcharts";
 
 const props = defineProps({
     tickets: Array,
+    chart: Object,
 });
 
 const page = usePage();
@@ -284,6 +363,113 @@ const getEtaStatus = (ticket) => {
         return `Lebih lambat ${Math.floor(diffInHours / 24)} hari`;
     return `Lebih lambat ${diffInHours} jam`;
 };
+
+// ==================== CHART ====================
+const selectedYear = ref(props.chart.year);
+
+// Ganti tahun: hanya data chart yang dimuat ulang, daftar tiket tidak ikut
+const changeYear = () => {
+    router.get(
+        "/admin/home",
+        { year: selectedYear.value },
+        {
+            only: ["chart"],
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        },
+    );
+};
+
+const baseChart = {
+    fontFamily: "Outfit, sans-serif",
+    toolbar: { show: false },
+};
+
+// ----- Tiket per bulan -----
+const monthlySeries = computed(() => [
+    { name: "Tiket", data: props.chart.monthly },
+]);
+
+const monthlyOptions = computed(() => {
+    const max = Math.max(...props.chart.monthly, 0);
+
+    return {
+        chart: { ...baseChart, type: "bar" },
+        colors: ["#465fff"],
+        plotOptions: {
+            bar: {
+                columnWidth: "45%",
+                borderRadius: 5,
+                borderRadiusApplication: "end",
+            },
+        },
+        dataLabels: { enabled: false },
+        xaxis: {
+            categories: [
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "Mei",
+                "Jun",
+                "Jul",
+                "Agu",
+                "Sep",
+                "Okt",
+                "Nov",
+                "Des",
+            ],
+            axisBorder: { show: false },
+            axisTicks: { show: false },
+        },
+        yaxis: {
+            min: 0,
+            // Data kecil: paksa sumbu Y berupa bilangan bulat (0, 1, 2, ...)
+            ...(max <= 5
+                ? { max: Math.max(max, 1), tickAmount: Math.max(max, 1) }
+                : {}),
+            labels: { formatter: (value) => Math.round(value) },
+        },
+        grid: { yaxis: { lines: { show: true } } },
+        tooltip: { y: { formatter: (value) => `${value} tiket` } },
+    };
+});
+
+// ----- Departemen terbanyak -----
+const departmentSeries = computed(() => [
+    {
+        name: "Tiket",
+        data: props.chart.departments.map((department) => department.total),
+    },
+]);
+
+const departmentOptions = computed(() => ({
+    chart: { ...baseChart, type: "bar" },
+    colors: ["#465fff"],
+    plotOptions: {
+        bar: {
+            horizontal: true,
+            barHeight: "55%",
+            borderRadius: 5,
+            borderRadiusApplication: "end",
+        },
+    },
+    dataLabels: { enabled: true },
+    xaxis: {
+        categories: props.chart.departments.map(
+            (department) => department.name,
+        ),
+        labels: { formatter: (value) => Math.round(value) },
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+    },
+    grid: {
+        xaxis: { lines: { show: true } },
+        yaxis: { lines: { show: false } },
+    },
+    tooltip: { y: { formatter: (value) => `${value} tiket` } },
+}));
 </script>
 <style scoped>
 /* Bagian atas: lekukan di sudut kiri-bawah dan kanan-bawah */

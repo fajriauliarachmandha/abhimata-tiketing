@@ -12,11 +12,17 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return redirect()->route('login');
-});
+    $user = auth()->user();
 
-Route::get('/welcome', function () {
-    return Inertia::render('Welcome');
+    // Belum login → ke halaman login
+    if (! $user) {
+        return redirect()->route('login');
+    }
+
+    // Sudah login → ke beranda sesuai role
+    return $user->role === 'it_support'
+        ? redirect()->route('admin.home')
+        : redirect()->route('user.home');
 });
 
 Route::middleware(['auth','it_support'])->prefix('admin')->group(function() {
