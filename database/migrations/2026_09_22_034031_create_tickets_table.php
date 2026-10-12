@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('assigned_to')->nullable()->constrained('users');
             $table->string('category');
             $table->string('priority')->nullable();
+            $table->timestamp('eta')->nullable();
             $table->string('description');
             $table->string('photo')->nullable();
             $table->string('status')->default('open');

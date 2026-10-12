@@ -1,15 +1,14 @@
 <template>
     <AdminLayout>
         <main>
-            <!-- Search & Filters -->
+            <!-- ==================== BAGIAN ATAS: pencarian, filter, export ==================== -->
             <div
                 class="flex flex-col gap-3 py-4 md:flex-row md:items-center md:justify-between"
             >
-                <!-- Kiri: Search, Filter Bulan, Filter Tahun -->
                 <div
                     class="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto"
                 >
-                    <!-- Input Search -->
+                    <!-- Kolom pencarian -->
                     <div class="relative w-full sm:w-64">
                         <div
                             class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none"
@@ -27,27 +26,22 @@
                         />
                     </div>
 
-                    <!-- Select Bulan -->
+                    <!-- Filter bulan: opsinya dibuat dari array `months` di bawah -->
                     <select
                         v-model="selectedMonth"
                         class="block w-full sm:w-36 h-10 text-sm text-heading bg-white border border-default-medium rounded-sm shadow-xs focus:ring-brand focus:border-brand dark:bg-gray-900 dark:text-white dark:border-gray-700"
                     >
                         <option value="">Semua Bulan</option>
-                        <option value="01">Januari</option>
-                        <option value="02">Februari</option>
-                        <option value="03">Maret</option>
-                        <option value="04">April</option>
-                        <option value="05">Mei</option>
-                        <option value="06">Juni</option>
-                        <option value="07">Juli</option>
-                        <option value="08">Agustus</option>
-                        <option value="09">September</option>
-                        <option value="10">Oktober</option>
-                        <option value="11">November</option>
-                        <option value="12">Desember</option>
+                        <option
+                            v-for="month in months"
+                            :key="month.value"
+                            :value="month.value"
+                        >
+                            {{ month.label }}
+                        </option>
                     </select>
 
-                    <!-- Select Tahun -->
+                    <!-- Filter tahun: opsinya diambil dari data tiket -->
                     <select
                         v-model="selectedYear"
                         class="block w-full sm:w-32 h-10 text-sm text-heading bg-white border border-default-medium rounded-sm shadow-xs focus:ring-brand focus:border-brand dark:bg-gray-900 dark:text-white dark:border-gray-700"
@@ -63,7 +57,7 @@
                     </select>
                 </div>
 
-                <!-- Kanan: Button Export -->
+                <!-- Tombol export Excel (nonaktif kalau tidak ada data) -->
                 <button
                     type="button"
                     @click="exportExcel"
@@ -91,7 +85,7 @@
                 </button>
             </div>
 
-            <!-- Table Container -->
+            <!-- ==================== TABEL ==================== -->
             <div
                 class="relative max-w-full overflow-x-auto bg-neutral-primary-soft shadow-xs rounded-sm border border-default"
             >
@@ -102,128 +96,75 @@
                         class="text-sm text-body bg-neutral-secondary-medium border-b border-t border-default-medium"
                     >
                         <tr>
-                            <th scope="col" class="px-6 py-3 font-medium">
-                                No.
-                            </th>
-                            <th scope="col" class="px-6 py-3 font-medium">
-                                Nomer Tiket
-                            </th>
-                            <th scope="col" class="px-6 py-3 font-medium">
-                                Tanggal Dibuat
-                            </th>
-                            <th scope="col" class="px-6 py-3 font-medium">
-                                Tanggal Selesai
-                            </th>
-                            <th scope="col" class="px-6 py-3 font-medium">
-                                Department
-                            </th>
-                            <th scope="col" class="px-6 py-3 font-medium">
-                                Dibuat Oleh
-                            </th>
-                            <th scope="col" class="px-6 py-3 font-medium">
-                                Teknisi
-                            </th>
-                            <th scope="col" class="px-6 py-3 font-medium">
-                                Kategori
-                            </th>
-                            <th scope="col" class="px-6 py-3 font-medium">
-                                Prioritas
-                            </th>
-                            <th scope="col" class="px-6 py-3 font-medium">
-                                Deskripsi
-                            </th>
-                            <th scope="col" class="px-6 py-3 font-medium">
-                                Foto
-                            </th>
-                            <th scope="col" class="px-6 py-3 font-medium">
-                                Status
+                            <!-- Judul kolom dibuat dari array `tableHeaders` di bawah -->
+                            <th
+                                v-for="header in tableHeaders"
+                                :key="header"
+                                scope="col"
+                                class="px-6 py-3 font-medium"
+                            >
+                                {{ header }}
                             </th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr
-                            v-for="(tickets, index) in paginatedTickets"
-                            :key="tickets.id"
+                            v-for="(ticket, index) in paginatedTickets"
+                            :key="ticket.id"
                             class="bg-neutral-primary-soft border-b border-default hover:bg-neutral-secondary-medium"
                         >
-                            <td
-                                class="px-6 py-4 font-semibold text-heading whitespace-nowrap"
-                            >
+                            <!-- Nomor urut tetap lanjut di halaman 2, 3, dst -->
+                            <td :class="cellClass">
                                 {{
                                     (currentPage - 1) * itemsPerPage + index + 1
                                 }}
                             </td>
-                            <td
-                                class="px-6 py-4 font-semibold text-heading whitespace-nowrap"
-                            >
-                                {{ tickets.ticket_number }}
+                            <td :class="cellClass">
+                                {{ ticket.ticket_number }}
                             </td>
-                            <td
-                                class="px-6 py-4 font-semibold text-heading whitespace-nowrap"
-                            >
-                                {{ formatDate(tickets.created_at) }}
+                            <td :class="cellClass">
+                                {{ formatDate(ticket.created_at) }}
                             </td>
-                            <td
-                                class="px-6 py-4 font-semibold text-heading whitespace-nowrap"
-                            >
-                                {{ formatDate(tickets.resolved_at) }}
+                            <td :class="cellClass">
+                                {{ formatDate(ticket.resolved_at) }}
                             </td>
-                            <td
-                                class="px-6 py-4 font-semibold text-heading whitespace-nowrap"
-                            >
-                                {{ tickets.department?.department_name ?? "-" }}
+                            <td :class="cellClass">
+                                {{ ticket.department?.department_name ?? "-" }}
                             </td>
-                            <td
-                                class="px-6 py-4 font-semibold text-heading whitespace-nowrap"
-                            >
-                                {{ tickets.creator?.name ?? "-" }}
+                            <td :class="cellClass">
+                                {{ ticket.creator?.name ?? "-" }}
                             </td>
-                            <td
-                                class="px-6 py-4 font-semibold text-heading whitespace-nowrap"
-                            >
+                            <td :class="cellClass">
                                 {{
-                                    tickets.technician
-                                        ? tickets.technician.name
-                                        : "Belum Ditugaskan"
+                                    ticket.technician?.name ??
+                                    "Belum Ditugaskan"
                                 }}
                             </td>
-                            <td
-                                class="px-6 py-4 font-semibold text-heading whitespace-nowrap"
-                            >
-                                {{ tickets.category }}
-                            </td>
-                            <td
-                                class="px-6 py-4 font-semibold text-heading whitespace-nowrap"
-                            >
-                                {{ tickets.priority }}
-                            </td>
+                            <td :class="cellClass">{{ ticket.category }}</td>
+                            <td :class="cellClass">{{ ticket.priority }}</td>
                             <td class="px-6 py-4 border-b border-default">
                                 <div
                                     class="font-semibold text-heading whitespace-normal line-clamp-2 w-64"
                                 >
-                                    {{ tickets.description }}
+                                    {{ ticket.description }}
                                 </div>
                             </td>
-                            <td
-                                class="px-6 py-4 font-semibold text-heading whitespace-nowrap"
-                            >
+                            <td :class="cellClass">
                                 <img
-                                    v-if="tickets.photo"
-                                    :src="`/storage/${tickets.photo}`"
+                                    v-if="ticket.photo"
+                                    :src="`/storage/${ticket.photo}`"
                                     class="w-full h-full object-contain"
                                     alt="Preview Foto"
                                 />
                                 <span v-else>-</span>
                             </td>
-                            <td
-                                class="px-6 py-4 font-semibold text-heading whitespace-nowrap"
-                            >
-                                {{ tickets.status }}
-                            </td>
+                            <td :class="cellClass">{{ ticket.status }}</td>
                         </tr>
+
+                        <!-- Pesan kalau tidak ada data -->
                         <tr v-if="paginatedTickets.length === 0">
                             <td
-                                colspan="12"
+                                :colspan="tableHeaders.length"
                                 class="px-6 py-4 text-center text-body"
                             >
                                 Tidak ada data yang cocok.
@@ -232,21 +173,22 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- ==================== PAGINATION ==================== -->
             <div class="flex flex-col items-center pt-5">
                 <span class="text-sm text-body">
-                    Menampilkan Halaman
+                    Halaman
                     <span class="font-semibold text-heading">{{
                         currentPage
                     }}</span>
                     dari
                     <span class="font-semibold text-heading">{{
-                        filteredTickets.length
+                        totalPages
                     }}</span>
-                    Data
+                    ({{ filteredTickets.length }} data)
                 </span>
-                <!-- Buttons -->
+
                 <div class="inline-flex mt-4 -space-x-px">
-                    <!-- Previous Button -->
                     <button
                         type="button"
                         @click="prevPage"
@@ -272,13 +214,11 @@
                         </svg>
                         Previous
                     </button>
-                    <!-- Next Button -->
+
                     <button
                         type="button"
                         @click="nextPage"
-                        :disabled="
-                            currentPage === totalPages || totalPages === 0
-                        "
+                        :disabled="currentPage >= totalPages"
                         class="inline-flex items-center text-body bg-neutral-secondary-medium border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading shadow-xs font-medium leading-5 rounded-e-sm text-sm px-3 py-2 focus:outline-none"
                     >
                         Next
@@ -312,123 +252,146 @@ import * as XLSX from "xlsx";
 import AdminLayout from "../../Layouts/AdminLayout.vue";
 import { MinimalisticMagnifierIcon } from "@solar-icons/vue/linear/minimalistic-magnifier";
 
+// ==================== DATA DARI LARAVEL ====================
+// `tickets` dikirim dari controller lewat Inertia::render(...)
 const props = defineProps({
     tickets: Array,
 });
 
-// State untuk filter
+// ==================== DATA TETAP (konstanta) ====================
+const months = [
+    { value: "01", label: "Januari" },
+    { value: "02", label: "Februari" },
+    { value: "03", label: "Maret" },
+    { value: "04", label: "April" },
+    { value: "05", label: "Mei" },
+    { value: "06", label: "Juni" },
+    { value: "07", label: "Juli" },
+    { value: "08", label: "Agustus" },
+    { value: "09", label: "September" },
+    { value: "10", label: "Oktober" },
+    { value: "11", label: "November" },
+    { value: "12", label: "Desember" },
+];
+
+const tableHeaders = [
+    "No.",
+    "Nomor Tiket",
+    "Tanggal Dibuat",
+    "Tanggal Selesai",
+    "Departemen",
+    "Dibuat Oleh",
+    "Teknisi",
+    "Kategori",
+    "Prioritas",
+    "Deskripsi",
+    "Foto",
+    "Status",
+];
+
+// Class yang dipakai berulang di setiap sel tabel
+const cellClass = "px-6 py-4 font-semibold text-heading whitespace-nowrap";
+
+const itemsPerPage = 10;
+
+// ==================== STATE (data yang berubah-ubah) ====================
 const searchQuery = ref("");
 const selectedMonth = ref("");
 const selectedYear = ref("");
+const currentPage = ref(1);
 
-// Menghasilkan daftar tahun secara dinamis berdasarkan data tiket
-// atau bisa juga hardcode (misal: ['2023', '2024', '2025'])
-const availableYears = computed(() => {
-    if (!props.tickets) return [];
-
-    // Ambil semua tahun dari created_at
-    const years = props.tickets
-        .filter((t) => t.created_at) // Pastikan tanggal ada
-        .map((t) => new Date(t.created_at).getFullYear().toString());
-
-    // Hilangkan duplikat dan urutkan menurun (terbaru di atas)
-    return [...new Set(years)].sort((a, b) => b - a);
-});
-
-// Reset ke halaman 1 setiap kali filter berubah
+// Kalau filter berubah, kembali ke halaman 1
 watch([searchQuery, selectedMonth, selectedYear], () => {
     currentPage.value = 1;
 });
 
-// Logika Filter Berlapis (Search AND Bulan AND Tahun)
-const filteredTickets = computed(() => {
-    return props.tickets.filter((ticket) => {
-        // 1. Cek Pencarian Teks
-        let matchesSearch = true;
-        if (searchQuery.value.trim()) {
-            const q = searchQuery.value.toLowerCase();
-            matchesSearch =
-                ticket.department?.department_name?.toLowerCase().includes(q) ||
-                ticket.creator?.name?.toLowerCase().includes(q) ||
-                ticket.technician?.name?.toLowerCase().includes(q) ||
-                ticket.category?.toLowerCase().includes(q) ||
-                ticket.status?.toLowerCase().includes(q) ||
-                ticket.ticket_number?.toLowerCase().includes(q);
-        }
+// ==================== FILTER ====================
+// Daftar tahun untuk dropdown, diambil dari tanggal pembuatan tiket (terbaru di atas)
+const availableYears = computed(() => {
+    const years = props.tickets
+        .filter((ticket) => ticket.created_at)
+        .map((ticket) => new Date(ticket.created_at).getFullYear().toString());
 
-        // 2. Cek Tanggal (harus ada created_at untuk memfilter bulan/tahun)
-        let matchesMonth = true;
-        let matchesYear = true;
-
-        if (ticket.created_at) {
-            const ticketDate = new Date(ticket.created_at);
-            // padStart(2, '0') memastikan bulan jadi "01", "02", dst
-            const ticketMonth = String(ticketDate.getMonth() + 1).padStart(
-                2,
-                "0",
-            );
-            const ticketYear = String(ticketDate.getFullYear());
-
-            if (selectedMonth.value) {
-                matchesMonth = ticketMonth === selectedMonth.value;
-            }
-            if (selectedYear.value) {
-                matchesYear = ticketYear === selectedYear.value;
-            }
-        } else if (selectedMonth.value || selectedYear.value) {
-            // Jika tiket tidak punya tanggal, tapi difilter, buang dari hasil
-            return false;
-        }
-
-        // Tiket lolos hanya jika memenuhi KETIGA syarat filter
-        return matchesSearch && matchesMonth && matchesYear;
-    });
+    return [...new Set(years)].sort((a, b) => b - a);
 });
 
+// Apakah tiket cocok dengan kata yang diketik di kolom pencarian?
+const matchesSearch = (ticket) => {
+    const keyword = searchQuery.value.trim().toLowerCase();
+    if (!keyword) return true; // tidak ada pencarian = semua lolos
+
+    const searchableFields = [
+        ticket.department?.department_name,
+        ticket.creator?.name,
+        ticket.technician?.name,
+        ticket.category,
+        ticket.status,
+        ticket.ticket_number,
+    ];
+
+    return searchableFields.some((field) =>
+        field?.toLowerCase().includes(keyword),
+    );
+};
+
+// Apakah tiket cocok dengan bulan dan tahun yang dipilih?
+const matchesDate = (ticket) => {
+    if (!selectedMonth.value && !selectedYear.value) return true; // tidak ada filter tanggal
+    if (!ticket.created_at) return false; // difilter tapi tiket tidak punya tanggal
+
+    const date = new Date(ticket.created_at);
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // "1" jadi "01"
+    const year = String(date.getFullYear());
+
+    const monthOk = !selectedMonth.value || month === selectedMonth.value;
+    const yearOk = !selectedYear.value || year === selectedYear.value;
+
+    return monthOk && yearOk;
+};
+
+// Tiket yang lolos pencarian DAN filter tanggal
+const filteredTickets = computed(() =>
+    props.tickets.filter(
+        (ticket) => matchesSearch(ticket) && matchesDate(ticket),
+    ),
+);
+
+// ==================== PAGINATION ====================
+const totalPages = computed(() =>
+    Math.ceil(filteredTickets.value.length / itemsPerPage),
+);
+
+// Hanya tiket untuk halaman yang sedang dibuka
+const paginatedTickets = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage;
+    return filteredTickets.value.slice(start, start + itemsPerPage);
+});
+
+const nextPage = () => {
+    if (currentPage.value < totalPages.value) currentPage.value++;
+};
+
+const prevPage = () => {
+    if (currentPage.value > 1) currentPage.value--;
+};
+
+// ==================== FORMAT TANGGAL ====================
 const formatDate = (dateString) => {
-    if (!dateString) {
-        return "-";
-    }
-    const date = new Date(dateString);
+    if (!dateString) return "-";
+
     return new Intl.DateTimeFormat("id-ID", {
         day: "2-digit",
         month: "long",
         year: "numeric",
         hour: "2-digit",
         minute: "2-digit",
-    }).format(date);
+    }).format(new Date(dateString));
 };
 
-// pagination
-const currentPage = ref(1);
-const itemsPerPage = ref(10);
-
-const totalPages = computed(() => {
-    return Math.ceil(filteredTickets.value.length / itemsPerPage.value);
-});
-
-const paginatedTickets = computed(() => {
-    const start = (currentPage.value - 1) * itemsPerPage.value;
-    const end = start + itemsPerPage.value;
-    return filteredTickets.value.slice(start, end);
-});
-
-const nextPage = () => {
-    if (currentPage.value < totalPages.value) {
-        currentPage.value++;
-    }
-};
-
-const prevPage = () => {
-    if (currentPage.value > 1) {
-        currentPage.value--;
-    }
-};
-
-// ==================== EXPORT EXCEL (DI BROWSER) ====================
-// Yang diekspor SEMUA hasil pencarian (filteredTickets), bukan hanya halaman yang tampil
+// ==================== EXPORT EXCEL ====================
+// Yang diekspor SEMUA hasil filter (bukan hanya halaman yang tampil)
 const exportExcel = () => {
-    // 1. Ubah data tiket menjadi baris Excel (kunci objek = judul kolom)
+    // 1. Ubah tiap tiket jadi satu baris Excel (nama properti = judul kolom)
     const rows = filteredTickets.value.map((ticket) => ({
         "Nomor Tiket": ticket.ticket_number,
         "Tanggal Dibuat": formatDate(ticket.created_at),
@@ -442,7 +405,7 @@ const exportExcel = () => {
         Status: ticket.status,
     }));
 
-    // 2. Buat sheet, lalu atur lebar tiap kolom
+    // 2. Buat sheet dan atur lebar kolom (urutannya sama dengan `rows`)
     const worksheet = XLSX.utils.json_to_sheet(rows);
     worksheet["!cols"] = [
         { wch: 26 }, // Nomor Tiket
@@ -457,7 +420,7 @@ const exportExcel = () => {
         { wch: 14 }, // Status
     ];
 
-    // 3. Masukkan sheet ke workbook, lalu unduh sebagai file .xlsx
+    // 3. Masukkan ke workbook lalu unduh sebagai .xlsx
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Riwayat Tiket");
 

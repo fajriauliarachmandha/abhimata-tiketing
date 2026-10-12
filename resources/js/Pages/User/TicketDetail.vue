@@ -20,19 +20,9 @@
                         <!-- Departemen + status -->
                         <div class="flex items-start justify-between gap-3">
                             <div class="min-w-0 leading-tight">
-                                <p
-                                    class="text-[11px] text-gray-400 dark:text-gray-500"
-                                >
-                                    Departemen
-                                </p>
-                                <p
-                                    class="text-sm font-semibold text-gray-900 dark:text-white truncate"
-                                >
-                                    {{
-                                        ticket.department?.department_name ??
-                                        user.department?.department_name ??
-                                        "-"
-                                    }}
+                                <p :class="infoLabelClass">Departemen</p>
+                                <p :class="infoValueClass">
+                                    {{ departmentName }}
                                 </p>
                             </div>
                             <span
@@ -62,39 +52,22 @@
                             class="mt-4 flex items-start justify-between gap-3"
                         >
                             <div class="min-w-0 leading-tight">
-                                <p
-                                    class="text-[11px] text-gray-400 dark:text-gray-500"
-                                >
-                                    Teknisi
-                                </p>
-                                <p
-                                    class="text-sm font-semibold text-gray-900 dark:text-white truncate"
-                                >
+                                <p :class="infoLabelClass">Teknisi</p>
+                                <p :class="infoValueClass">
                                     {{
-                                        ticket.technician
-                                            ? ticket.technician.name
-                                            : "Belum ada teknisi"
+                                        ticket.technician?.name ??
+                                        "Belum ada teknisi"
                                     }}
                                 </p>
                             </div>
                             <div class="min-w-0 leading-tight">
-                                <p
-                                    class="text-[11px] text-gray-400 dark:text-gray-500"
-                                >
-                                    Kategori
-                                </p>
-                                <p
-                                    class="text-sm font-semibold text-gray-900 dark:text-white truncate"
-                                >
+                                <p :class="infoLabelClass">Kategori</p>
+                                <p :class="infoValueClass">
                                     {{ ticket.category }}
                                 </p>
                             </div>
                             <div class="min-w-0 leading-tight">
-                                <p
-                                    class="text-[11px] text-gray-400 dark:text-gray-500"
-                                >
-                                    Prioritas
-                                </p>
+                                <p :class="infoLabelClass">Prioritas</p>
                                 <span
                                     class="mt-0.5 inline-block text-xs font-medium px-2 py-0.5 rounded-full"
                                     :class="getPriorityClass(ticket.priority)"
@@ -117,23 +90,17 @@
                         <!-- Tanggal dibuat + keterlambatan -->
                         <div class="flex items-center justify-between gap-3">
                             <div class="min-w-0 leading-tight">
-                                <p
-                                    class="text-[11px] text-gray-400 dark:text-gray-500"
-                                >
-                                    Dibuat
-                                </p>
-                                <p
-                                    class="text-sm font-semibold text-gray-900 dark:text-white"
-                                >
+                                <p :class="infoLabelClass">Dibuat</p>
+                                <p :class="infoValueClass">
                                     {{ formatDate(ticket.created_at) }}
                                 </p>
                             </div>
 
                             <span
-                                v-if="getEtaStatus(ticket)"
+                                v-if="lateText"
                                 class="inline-block text-xs font-medium text-red-600 bg-red-50 dark:bg-red-900/40 dark:text-red-400 px-2 py-0.5 rounded-full"
                             >
-                                {{ getEtaStatus(ticket) }}
+                                {{ lateText }}
                             </span>
                         </div>
 
@@ -169,18 +136,16 @@
                     </div>
                 </div>
 
-                <!-- ==================== KOLOM KANAN: RIWAYAT PELACAKAN ==================== -->
+                <!-- ==================== KOLOM KANAN: PELACAKAN & RATING ==================== -->
                 <div>
-                    <div
-                        v-if="ticket.tracking && ticket.tracking.length > 0"
-                        class="mb-6 ms-2 mt-2"
-                    >
+                    <!-- Riwayat pelacakan -->
+                    <div v-if="trackingLogs.length > 0" class="mb-6 ms-2 mt-2">
                         <div
-                            v-for="(log, index) in ticket.tracking"
+                            v-for="(log, index) in trackingLogs"
                             :key="log.id"
                             class="flex gap-3 items-stretch"
                         >
-                            <!-- Kiri: Tanggal & Waktu -->
+                            <!-- Kiri: tanggal & waktu -->
                             <div class="w-12 shrink-0 text-right pt-0.5">
                                 <p
                                     class="text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -194,32 +159,29 @@
                                 </p>
                             </div>
 
-                            <!-- Tengah: Titik & Garis -->
+                            <!-- Tengah: titik & garis -->
                             <div class="flex flex-col items-center">
-                                <!-- Titik bulat hijau -->
                                 <div
                                     class="w-2 h-2 bg-emerald-700 dark:bg-emerald-500 rounded-full mt-1.5 shrink-0"
                                 ></div>
-                                <!-- Garis vertikal penghubung (hilang di data paling terakhir) -->
+                                <!-- Garis penghubung (tidak ada di data paling terakhir) -->
                                 <div
-                                    v-if="index !== ticket.tracking.length - 1"
+                                    v-if="index !== trackingLogs.length - 1"
                                     class="w-px flex-1 bg-gray-300 dark:bg-gray-700 mt-1"
                                 ></div>
                             </div>
 
-                            <!-- Kanan: Catatan Pelacakan -->
+                            <!-- Kanan: catatan pelacakan -->
                             <div class="flex-1 pb-6 pt-0.5">
                                 <p
                                     class="text-sm font-medium text-emerald-700 dark:text-emerald-400"
                                 >
                                     {{ log.note }}
                                 </p>
-                                <!-- Nama penulis (bisa admin atau teknisi) -->
                                 <p
                                     class="text-[10px] text-gray-400 dark:text-gray-500 mt-1"
                                 >
-                                    Oleh:
-                                    {{ log.user ? log.user.name : "Sistem" }}
+                                    Oleh: {{ log.user?.name ?? "Sistem" }}
                                 </p>
                             </div>
                         </div>
@@ -241,35 +203,28 @@
                         </p>
 
                         <form @submit.prevent="submitReview" class="space-y-4">
+                            <!-- Bintang: bisa diklik kalau belum dinilai, hanya tampilan kalau sudah -->
                             <div>
                                 <label
-                                    v-if="!ticket.review"
-                                    class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    >Beri Rating:</label
+                                    v-if="!isReviewed"
+                                    :class="reviewLabelClass"
                                 >
+                                    Beri Rating:
+                                </label>
 
-                                <!-- Satu baris bintang untuk dua mode: form (bisa diklik) dan read-only (sudah dinilai) -->
                                 <div
                                     class="flex items-center space-x-1"
                                     @mouseleave="hoverRating = 0"
                                 >
                                     <StarIcon
-                                        size="24"
                                         v-for="star in 5"
                                         :key="star"
-                                        @click="
-                                            !ticket.review &&
-                                            (form.rating = star)
-                                        "
-                                        @mouseenter="
-                                            !ticket.review &&
-                                            (hoverRating = star)
-                                        "
+                                        size="24"
+                                        @click="selectStar(star)"
+                                        @mouseenter="hoverStar(star)"
                                         :class="[
                                             'w-8 h-8 transition-colors duration-200',
-                                            ticket.review
-                                                ? ''
-                                                : 'cursor-pointer',
+                                            isReviewed ? '' : 'cursor-pointer',
                                             star <= displayRating
                                                 ? 'text-yellow-400'
                                                 : 'text-gray-300 dark:text-gray-600',
@@ -278,26 +233,25 @@
                                 </div>
 
                                 <span
-                                    v-if="form.errors.rating"
+                                    v-if="reviewForm.errors.rating"
                                     class="mt-1 block text-sm text-red-500"
                                 >
-                                    {{ form.errors.rating }}
+                                    {{ reviewForm.errors.rating }}
                                 </span>
                             </div>
 
-                            <!-- Tag: bisa dipilih kalau belum dinilai, hanya tampil tag terpilih kalau sudah -->
+                            <!-- Tag: bisa dipilih kalau belum dinilai, hanya tag terpilih yang tampil kalau sudah -->
                             <div
-                                v-if="
-                                    !ticket.review || ticket.review.tags?.length
-                                "
+                                v-if="!isReviewed || ticket.review.tags?.length"
                             >
                                 <label
-                                    v-if="!ticket.review"
-                                    class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    >Tag (opsional):</label
+                                    v-if="!isReviewed"
+                                    :class="reviewLabelClass"
                                 >
+                                    Tag (opsional):
+                                </label>
                                 <div class="flex flex-wrap gap-2">
-                                    <template v-if="ticket.review">
+                                    <template v-if="isReviewed">
                                         <span
                                             v-for="tag in ticket.review.tags"
                                             :key="tag"
@@ -314,7 +268,7 @@
                                             @click="toggleTag(tag)"
                                             :class="[
                                                 'rounded-full border px-3 py-1 text-xs transition active:scale-95',
-                                                form.tags.includes(tag)
+                                                reviewForm.tags.includes(tag)
                                                     ? 'border-amber-600 bg-amber-600 text-white dark:border-amber-500 dark:bg-amber-500'
                                                     : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700',
                                             ]"
@@ -326,13 +280,13 @@
                             </div>
 
                             <button
-                                v-if="!ticket.review"
+                                v-if="!isReviewed"
                                 type="submit"
-                                :disabled="form.processing"
+                                :disabled="reviewForm.processing"
                                 class="w-full my-4 px-4 py-3 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-full focus:outline-none focus:ring-4 focus:ring-amber-200 dark:focus:ring-amber-900 transition active:scale-95 disabled:opacity-50"
                             >
                                 {{
-                                    form.processing
+                                    reviewForm.processing
                                         ? "Menyimpan..."
                                         : "Kirim Rating"
                                 }}
@@ -342,17 +296,8 @@
                 </div>
             </div>
 
-            <!-- ==================== MODAL ==================== -->
-
-            <!-- Modal konfirmasi batalkan tiket -->
-            <Transition
-                enter-active-class="transition ease-out duration-200"
-                enter-from-class="opacity-0"
-                enter-to-class="opacity-100"
-                leave-active-class="transition ease-in duration-150"
-                leave-from-class="opacity-100"
-                leave-to-class="opacity-0"
-            >
+            <!-- ==================== MODAL KONFIRMASI BATALKAN TIKET ==================== -->
+            <Transition name="fade">
                 <div
                     v-if="isCancelModalOpen"
                     class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
@@ -414,52 +359,37 @@ import { ref, computed } from "vue";
 import { useForm, usePage, router } from "@inertiajs/vue3";
 import { StarIcon } from "@solar-icons/vue/bold/star";
 import UserLayout from "../../Layouts/UserLayout.vue";
-// ==================== DATA DARI CONTROLLER ====================
+
+// ==================== DATA DARI LARAVEL ====================
+// `ticket` dikirim dari User\TicketController@show (sudah termasuk relasinya)
 const props = defineProps({
     ticket: Object,
 });
 
-// ==================== USER YANG SEDANG LOGIN ====================
+// Data user yang sedang login (dibagikan Inertia ke semua halaman)
 const page = usePage();
 const user = computed(() => page.props.auth.user);
 
-// ==================== BATALKAN TIKET ====================
-const isCancelModalOpen = ref(false);
-const cancelForm = useForm({});
+// ==================== CLASS YANG DIPAKAI BERULANG ====================
+const infoLabelClass = "text-[11px] text-gray-400 dark:text-gray-500";
+const infoValueClass =
+    "text-sm font-semibold text-gray-900 dark:text-white truncate";
+const reviewLabelClass =
+    "block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300";
 
-// Tiket hanya bisa dibatalkan selama statusnya masih open
-const canCancel = computed(() => props.ticket.status === "open");
+// ==================== DATA TIKET UNTUK TAMPILAN ====================
+// Departemen tiket; kalau kosong pakai departemen user yang login
+const departmentName = computed(
+    () =>
+        props.ticket.department?.department_name ??
+        user.value.department?.department_name ??
+        "-",
+);
 
-// Keterangan yang tampil kalau tiket tidak bisa dibatalkan
-const statusMessage = computed(() => {
-    switch (props.ticket.status) {
-        case "cancelled":
-            return "Tiket ini sudah dibatalkan.";
-        case "accepted":
-            return "Tiket sudah diterima teknisi dan tidak bisa dibatalkan.";
-        case "in progress":
-            return "Tiket sedang dikerjakan teknisi dan tidak bisa dibatalkan.";
-        case "done":
-            return "Tiket ini sudah selesai.";
-        default:
-            return "";
-    }
-});
+// Kalau tiket belum punya riwayat, pakai array kosong supaya tidak error
+const trackingLogs = computed(() => props.ticket.tracking ?? []);
 
-const closeCancelModal = () => {
-    if (!cancelForm.processing) isCancelModalOpen.value = false;
-};
-
-const cancelTicket = () => {
-    cancelForm.put(`/user/ticket/${props.ticket.id}`, {
-        onSuccess: () => {
-            isCancelModalOpen.value = false;
-            router.visit("/user/home");
-        },
-    });
-};
-
-// ==================== TAMPILAN: WARNA BADGE ====================
+// Warna badge prioritas
 const priorityClasses = {
     low: "bg-sky-100 text-sky-800 border border-sky-300",
     medium: "bg-amber-200 text-amber-900 border border-amber-400",
@@ -477,6 +407,7 @@ const getPriorityClass = (priority) => {
     );
 };
 
+// Warna badge status
 const getStatusClass = (status) => {
     switch (status) {
         case "accepted":
@@ -491,9 +422,10 @@ const getStatusClass = (status) => {
     }
 };
 
-// ==================== TAMPILAN: TANGGAL & KETERLAMBATAN ====================
+// ==================== TANGGAL & KETERLAMBATAN ====================
 const formatDate = (date) => {
     if (!date) return "-";
+
     return new Date(date).toLocaleDateString("id-ID", {
         day: "numeric",
         month: "short",
@@ -501,29 +433,23 @@ const formatDate = (date) => {
     });
 };
 
-const getEtaStatus = (ticket) => {
-    if (
-        !ticket.eta ||
-        ["resolved", "cancelled", "done"].includes(ticket.status)
-    ) {
-        return null;
-    }
+// Teks keterlambatan, misal "Lebih lambat 3 jam". Berisi null kalau tidak terlambat.
+const lateText = computed(() => {
+    const { eta, status } = props.ticket;
+    const isFinished = ["resolved", "cancelled", "done"].includes(status);
+    if (!eta || isFinished) return null;
 
-    const diffInHours = Math.floor(
-        (new Date() - new Date(ticket.eta)) / (1000 * 60 * 60),
+    const hoursLate = Math.floor(
+        (new Date() - new Date(eta)) / (1000 * 60 * 60),
     );
 
-    if (diffInHours < 1) return null;
-    if (diffInHours >= 24)
-        return `Lebih lambat ${Math.floor(diffInHours / 24)} hari`;
-    return `Lebih lambat ${diffInHours} jam`;
-};
+    if (hoursLate < 1) return null; // belum lewat ETA
+    if (hoursLate >= 24)
+        return `Lebih lambat ${Math.floor(hoursLate / 24)} hari`;
+    return `Lebih lambat ${hoursLate} jam`;
+});
 
-// ==================== RIWAYAT PELACAKAN ====================
-// Kalau tiket belum punya riwayat, pakai array kosong supaya tidak error
-const trackings = computed(() => props.ticket.tracking ?? []);
-
-// Menampilkan "Hari ini", "Kemarin", atau tanggal singkat (misal 13 Okt)
+// "Hari ini", "Kemarin", atau tanggal singkat (misal 13 Okt)
 const getRelativeDay = (dateString) => {
     if (!dateString) return "-";
 
@@ -538,12 +464,42 @@ const getRelativeDay = (dateString) => {
     return date.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
 };
 
-// Menampilkan jam dengan format 14:30
+// Jam dengan format 14:30
 const formatTime = (dateString) => {
     if (!dateString) return "-";
+
     return new Date(dateString)
         .toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
         .replace(".", ":");
+};
+
+// ==================== BATALKAN TIKET ====================
+const isCancelModalOpen = ref(false);
+const cancelForm = useForm({}); // form kosong, hanya untuk memakai status "processing"
+
+// Tiket hanya bisa dibatalkan selama statusnya masih open
+const canCancel = computed(() => props.ticket.status === "open");
+
+// Keterangan yang tampil kalau tiket tidak bisa dibatalkan
+const statusMessages = {
+    cancelled: "Tiket ini sudah dibatalkan.",
+    accepted: "Tiket sudah diterima teknisi dan tidak bisa dibatalkan.",
+    "in progress": "Tiket sedang dikerjakan teknisi dan tidak bisa dibatalkan.",
+    done: "Tiket ini sudah selesai.",
+};
+const statusMessage = computed(() => statusMessages[props.ticket.status] ?? "");
+
+const closeCancelModal = () => {
+    if (!cancelForm.processing) isCancelModalOpen.value = false;
+};
+
+const cancelTicket = () => {
+    cancelForm.put(`/user/ticket/${props.ticket.id}`, {
+        onSuccess: () => {
+            isCancelModalOpen.value = false;
+            router.visit("/user/home");
+        },
+    });
 };
 
 // ==================== RATING ====================
@@ -556,35 +512,64 @@ const reviewTags = [
     "Kurang jelas",
 ];
 
-const hoverRating = ref(0);
-
-const form = useForm({
+// useForm dari Inertia: menyimpan isi form, error validasi, dan status "sedang mengirim"
+const reviewForm = useForm({
     ticket_id: props.ticket.id,
     rating: 0,
     tags: [],
 });
 
+const hoverRating = ref(0); // bintang yang sedang di-hover
+const isReviewed = computed(() => !!props.ticket.review); // tiket sudah pernah dinilai?
+
 // Bintang yang menyala: rating tersimpan kalau sudah dinilai, kalau belum ikut hover/pilihan
 const displayRating = computed(() =>
-    props.ticket.review
+    isReviewed.value
         ? props.ticket.review.rating
-        : hoverRating.value || form.rating,
+        : hoverRating.value || reviewForm.rating,
 );
 
+// Bintang hanya bisa diklik/di-hover kalau tiket belum dinilai
+const selectStar = (star) => {
+    if (!isReviewed.value) reviewForm.rating = star;
+};
+
+const hoverStar = (star) => {
+    if (!isReviewed.value) hoverRating.value = star;
+};
+
+// Pilih tag kalau belum ada, hapus kalau sudah dipilih
 const toggleTag = (tag) => {
-    const i = form.tags.indexOf(tag);
-    i === -1 ? form.tags.push(tag) : form.tags.splice(i, 1);
+    const index = reviewForm.tags.indexOf(tag);
+
+    if (index === -1) {
+        reviewForm.tags.push(tag);
+    } else {
+        reviewForm.tags.splice(index, 1);
+    }
 };
 
 const submitReview = () => {
     // Setelah sukses, Inertia memuat ulang props sehingga ticket.review terisi
     // dan tampilan otomatis berubah jadi read-only
-    form.post("/user/reviews", { preserveScroll: true });
+    reviewForm.post("/user/reviews", { preserveScroll: true });
 };
 </script>
 
 <style scoped>
-/* Bagian atas: lekukan di sudut kiri-bawah dan kanan-bawah */
+/* Animasi muncul/hilang untuk modal (dipakai lewat <Transition name="fade">) */
+.fade-enter-active {
+    transition: opacity 200ms ease-out;
+}
+.fade-leave-active {
+    transition: opacity 150ms ease-in;
+}
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+/* Lekukan tiket (efek sobekan karcis): atas = sudut kiri-bawah & kanan-bawah */
 .ticket-top {
     -webkit-mask:
         radial-gradient(circle 12px at 0 100%, #0000 98%, #000) left / 51% 100%
@@ -598,7 +583,7 @@ const submitReview = () => {
             100% no-repeat;
 }
 
-/* Bagian bawah: lekukan di sudut kiri-atas dan kanan-atas */
+/* Bagian bawah: lekukan di sudut kiri-atas & kanan-atas */
 .ticket-bottom {
     -webkit-mask:
         radial-gradient(circle 12px at 0 0, #0000 98%, #000) left / 51% 100%

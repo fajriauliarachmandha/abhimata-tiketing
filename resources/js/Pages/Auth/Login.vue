@@ -31,24 +31,24 @@
                         <form @submit.prevent="submit" class="space-y-6 mt-10">
                             <div>
                                 <label
-                                    for="username"
+                                    for="email"
                                     class="mb-2 text-slate-900 font-medium text-sm inline-block"
-                                    >Username</label
+                                    >Email</label
                                 >
                                 <input
-                                    type="text"
-                                    v-model="form.username"
-                                    id="username"
-                                    name="username"
-                                    placeholder="Username"
+                                    type="email"
+                                    v-model="form.email"
+                                    id="email"
+                                    name="email"
+                                    placeholder="Email"
                                     required
                                     class="px-3 py-2.5 text-sm text-slate-900 rounded-md bg-white w-full outline-1 -outline-offset-1 outline-slate-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600"
                                 />
                                 <span
-                                    v-if="form.errors.username"
+                                    v-if="form.errors.email"
                                     class="text-red-500 text-sm block mt-1"
                                 >
-                                    {{ form.errors.username }}
+                                    {{ form.errors.email }}
                                 </span>
                             </div>
                             <div>
@@ -87,7 +87,7 @@
 import { useForm } from "@inertiajs/vue3";
 
 const form = useForm({
-    username: "",
+    email: "",
     password: "",
 });
 

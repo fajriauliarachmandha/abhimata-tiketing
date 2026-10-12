@@ -10,110 +10,84 @@
             </div>
 
             <form @submit.prevent="submit" class="mx-auto my-7 px-4">
-                <!-- DEPARTEMENT -->
+                <!-- DEPARTEMEN (otomatis dari akun, tidak bisa diubah) -->
                 <div class="mb-5">
-                    <label
-                        for="departement"
-                        class="block mb-2.5 text-sm font-medium text-heading dark:text-gray-200"
-                        >Departement
-                        <span class="text-xs text-red-500"> * </span></label
-                    >
+                    <label for="department" :class="labelClass">
+                        Departemen
+                        <span class="text-xs text-red-500"> * </span>
+                    </label>
                     <input
                         type="text"
-                        id="departement"
+                        id="department"
                         class="block w-full h-10 px-3 text-sm text-heading dark:text-white bg-white dark:bg-gray-800 border border-default-medium dark:border-gray-700 rounded-sm shadow-xs placeholder:text-body dark:placeholder-gray-400 focus:ring-brand focus:border-brand disabled:opacity-50"
-                        placeholder="Departement"
-                        required
-                        :value="user.department.department_name"
+                        :value="user.department?.department_name"
                         disabled
                     />
                 </div>
 
                 <!-- KATEGORI KENDALA -->
                 <div class="mb-5">
-                    <label
-                        class="block mb-2.5 text-sm font-medium text-heading dark:text-gray-200"
-                    >
-                        Kategori Kendala<span class="text-xs text-red-500">
-                            *
-                        </span>
-                    </label>
+                    <span :class="labelClass">
+                        Kategori Kendala
+                        <span class="text-xs text-red-500"> * </span>
+                    </span>
                     <div class="flex flex-wrap gap-2">
                         <label
-                            v-for="item in categoryOptions"
-                            :key="item.value"
+                            v-for="category in categories"
+                            :key="category"
                             class="cursor-pointer"
                         >
                             <input
                                 type="radio"
-                                name="kategori_kendala"
-                                :value="item.value"
+                                name="category"
+                                :value="category"
                                 v-model="form.category"
                                 class="sr-only peer"
                             />
-                            <div
-                                class="inline-flex items-center justify-center h-10 px-4 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm rounded-full border border-gray-300 dark:border-gray-700 transition-all duration-200 ease-in-out active:scale-95 peer-checked:bg-dark peer-checked:text-white peer-checked:border-dark dark:peer-checked:bg-gray-100 dark:peer-checked:text-gray-900 dark:peer-checked:border-gray-100 peer-checked:shadow-md peer-checked:scale-[1.02]"
-                            >
-                                {{ item.label }}
+                            <div :class="[chipClass, categoryActiveClass]">
+                                {{ category }}
                             </div>
                         </label>
                     </div>
-                    <span
-                        v-if="form.errors.category"
-                        class="text-xs text-red-500 mt-1 block"
-                    >
+                    <span v-if="form.errors.category" :class="errorClass">
                         {{ form.errors.category }}
                     </span>
                 </div>
 
                 <!-- TINGKAT PRIORITAS -->
                 <div class="mb-5">
-                    <label
-                        class="block mb-2.5 text-sm font-medium text-heading dark:text-gray-200"
-                    >
-                        Tingkat Prioritas<span class="text-xs text-red-500">
-                            *
-                        </span>
-                    </label>
-
+                    <span :class="labelClass">
+                        Tingkat Prioritas
+                        <span class="text-xs text-red-500"> * </span>
+                    </span>
                     <div class="flex flex-wrap gap-2">
                         <label
-                            v-for="item in priorityOptions"
-                            :key="item.value"
+                            v-for="priority in priorityOptions"
+                            :key="priority.value"
                             class="cursor-pointer select-none"
                         >
                             <input
                                 type="radio"
-                                name="tingkat_prioritas"
-                                :value="item.value"
+                                name="priority"
+                                :value="priority.value"
                                 v-model="form.priority"
                                 class="sr-only peer"
                             />
-
-                            <div
-                                class="inline-flex items-center justify-center h-10 px-4 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm rounded-full border border-gray-300 dark:border-gray-700 transition-all duration-200 ease-in-out active:scale-95 peer-checked:shadow-md peer-checked:scale-[1.02]"
-                                :class="item.activeClass"
-                            >
-                                {{ item.label }}
+                            <div :class="[chipClass, priority.activeClass]">
+                                {{ priority.label }}
                             </div>
-                            <span
-                                v-if="form.errors.priority"
-                                class="text-xs text-red-500 mt-1 block"
-                            >
-                                {{ form.errors.priority }}
-                            </span>
                         </label>
                     </div>
+                    <span v-if="form.errors.priority" :class="errorClass">
+                        {{ form.errors.priority }}
+                    </span>
                 </div>
 
                 <!-- FOTO -->
                 <div class="mb-5">
-                    <label
-                        class="block mb-2.5 text-sm font-medium text-heading dark:text-gray-200"
-                    >
-                        Foto
-                    </label>
+                    <span :class="labelClass">Foto</span>
 
+                    <!-- Input file disembunyikan, dibuka lewat klik pada kotak di bawah -->
                     <input
                         ref="fileInput"
                         type="file"
@@ -123,7 +97,7 @@
                         @change="handleFileChange"
                     />
                     <div
-                        @click="openCamera"
+                        @click="openPhotoPicker"
                         class="relative w-full h-32 bg-gray-50 dark:bg-gray-800 border-2 border-dashed border-gray-400 dark:border-gray-600 rounded-sm flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors overflow-hidden"
                     >
                         <img
@@ -156,42 +130,33 @@
                             <span class="text-xs font-medium">Ambil Foto</span>
                         </div>
                     </div>
-                    <span
-                        v-if="form.errors.photo"
-                        class="text-xs text-red-500 mt-1 block"
-                    >
+                    <span v-if="form.errors.photo" :class="errorClass">
                         {{ form.errors.photo }}
                     </span>
                 </div>
 
                 <!-- DESKRIPSI -->
                 <div class="mb-5">
-                    <label
-                        for="deskripsi"
-                        class="block mb-2.5 text-sm font-medium text-heading dark:text-gray-200"
-                        >Deskripsi<span class="text-xs text-red-500">
-                            *
-                        </span></label
-                    >
+                    <label for="description" :class="labelClass">
+                        Deskripsi
+                        <span class="text-xs text-red-500"> * </span>
+                    </label>
                     <textarea
-                        id="deskripsi"
+                        id="description"
                         rows="4"
-                        name="deskripsi"
                         v-model="form.description"
                         class="bg-white dark:bg-gray-800 border border-default-medium dark:border-gray-700 text-heading dark:text-white text-sm rounded-sm focus:ring-brand focus:border-brand block w-full p-4 shadow-xs placeholder:text-body dark:placeholder-gray-400"
                         placeholder="Jelaskan kendala kamu..."
                     ></textarea>
-                    <span
-                        v-if="form.errors.description"
-                        class="text-xs text-red-500 mt-1 block"
-                    >
+                    <span v-if="form.errors.description" :class="errorClass">
                         {{ form.errors.description }}
                     </span>
                 </div>
 
                 <button
                     type="submit"
-                    class="inline-flex items-center justify-center gap-1.5 h-10 px-4 text-sm font-semibold text-white bg-primary-500 hover:bg-primary-600 border border-transparent rounded-sm shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-medium active:scale-95 transition duration-200 w-full"
+                    :disabled="form.processing"
+                    class="inline-flex items-center justify-center gap-1.5 h-10 px-4 text-sm font-semibold text-white bg-primary-500 hover:bg-primary-600 border border-transparent rounded-sm shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-medium active:scale-95 transition duration-200 w-full disabled:opacity-60"
                 >
                     Ajukan Tiket
                 </button>
@@ -206,37 +171,14 @@ import UserLayout from "../../Layouts/UserLayout.vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import Swal from "sweetalert2";
 
-// ==================== NOTIFIKASI (SWEETALERT) ====================
+// Data user yang sedang login (dibagikan Inertia ke semua halaman)
 const page = usePage();
+const user = computed(() => page.props.auth.user);
 
-const Toast = Swal.mixin({
-    toast: true,
-    position: "top-end",
-    showConfirmButton: false,
-    timer: 3000,
-    timerProgressBar: true,
-});
+// ==================== DATA TETAP (konstanta) ====================
+const categories = ["Hardware", "Software", "Jaringan", "Printer", "Lainnya"];
 
-// Pesan dari controller (->with('success'/'error', ...)) tampil sebagai toast
-watch(
-    () => page.props.flash,
-    (flash) => {
-        if (flash?.success)
-            Toast.fire({ icon: "success", title: flash.success });
-        if (flash?.error) Toast.fire({ icon: "error", title: flash.error });
-    },
-    { deep: true },
-);
-// ================================================
-
-const categoryOptions = [
-    { label: "Hardware", value: "Hardware" },
-    { label: "Software", value: "Software" },
-    { label: "Jaringan", value: "Jaringan" },
-    { label: "Printer", value: "Printer" },
-    { label: "Lainnya", value: "Lainnya" },
-];
-
+// `activeClass` = warna tombol saat dipilih
 const priorityOptions = [
     {
         label: "Low",
@@ -264,6 +206,39 @@ const priorityOptions = [
     },
 ];
 
+// Class yang dipakai berulang di form
+const labelClass =
+    "block mb-2.5 text-sm font-medium text-heading dark:text-gray-200";
+const errorClass = "text-xs text-red-500 mt-1 block";
+
+// Tombol pilihan bulat (kategori & prioritas) memakai dasar class yang sama
+const chipClass =
+    "inline-flex items-center justify-center h-10 px-4 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm rounded-full border border-gray-300 dark:border-gray-700 transition-all duration-200 ease-in-out active:scale-95 peer-checked:shadow-md peer-checked:scale-[1.02]";
+const categoryActiveClass =
+    "peer-checked:bg-dark peer-checked:text-white peer-checked:border-dark dark:peer-checked:bg-gray-100 dark:peer-checked:text-gray-900 dark:peer-checked:border-gray-100";
+
+// ==================== NOTIFIKASI (SWEETALERT) ====================
+const Toast = Swal.mixin({
+    toast: true,
+    position: "top-end",
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+});
+
+// Pesan dari controller (->with('success'/'error', ...)) tampil sebagai toast
+watch(
+    () => page.props.flash,
+    (flash) => {
+        if (flash?.success)
+            Toast.fire({ icon: "success", title: flash.success });
+        if (flash?.error) Toast.fire({ icon: "error", title: flash.error });
+    },
+    { deep: true },
+);
+
+// ==================== FORM ====================
+// useForm dari Inertia: menyimpan isi form, error validasi, dan status "sedang mengirim"
 const form = useForm({
     category: "",
     priority: "Low",
@@ -271,36 +246,42 @@ const form = useForm({
     description: "",
 });
 
-const fileInput = ref(null);
-const previewUrl = ref(null);
+// ==================== FOTO ====================
+const fileInput = ref(null); // mengacu ke <input type="file"> yang disembunyikan
+const previewUrl = ref(null); // alamat sementara untuk menampilkan foto yang dipilih
 
-const openCamera = () => {
+const openPhotoPicker = () => {
     fileInput.value?.click();
+};
+
+// Hapus alamat sementara foto dari memori browser
+const clearPreview = () => {
+    if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
+    previewUrl.value = null;
 };
 
 const handleFileChange = (event) => {
     const file = event.target.files[0];
-    if (file) {
-        if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
-        form.photo = file;
-        previewUrl.value = URL.createObjectURL(file);
-    }
+    if (!file) return;
+
+    clearPreview(); // buang preview foto sebelumnya
+    form.photo = file;
+    previewUrl.value = URL.createObjectURL(file);
 };
 
-// Bersihkan object URL saat komponen di-unmount (cegah memory leak)
-onBeforeUnmount(() => {
-    if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
-});
+// Bersihkan saat halaman ditutup (mencegah memory leak)
+onBeforeUnmount(clearPreview);
 
+// ==================== KIRIM FORM ====================
 const submit = () => {
     form.post("/user/ticket", {
-        forceFormData: true,
+        forceFormData: true, // wajib supaya file foto ikut terkirim
         onSuccess: () => {
             form.reset();
-            previewUrl.value = null;
+            clearPreview();
         },
+        // Kalau gagal, isian form tetap ada supaya tidak perlu mengetik ulang
         onError: (errors) => {
-            // modal tetap terbuka supaya data tidak hilang
             Swal.fire({
                 icon: "error",
                 title: "Gagal mengajukan tiket",
@@ -311,6 +292,4 @@ const submit = () => {
         },
     });
 };
-
-const user = computed(() => page.props.auth.user);
 </script>

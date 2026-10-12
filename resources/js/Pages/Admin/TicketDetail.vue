@@ -30,7 +30,6 @@
                                 >
                                     {{
                                         ticket.department?.department_name ??
-                                        user.department?.department_name ??
                                         "-"
                                     }}
                                 </p>
@@ -71,9 +70,8 @@
                                     class="text-sm font-semibold text-gray-900 dark:text-white truncate"
                                 >
                                     {{
-                                        ticket.technician
-                                            ? ticket.technician.name
-                                            : "Belum ada teknisi"
+                                        ticket.technician?.name ??
+                                        "Belum ada teknisi"
                                     }}
                                 </p>
                             </div>
@@ -130,14 +128,13 @@
                             </div>
 
                             <span
-                                v-if="getEtaStatus(ticket)"
+                                v-if="lateLabel"
                                 class="inline-block text-xs font-medium text-red-600 bg-red-50 dark:bg-red-900/40 dark:text-red-400 px-2 py-0.5 rounded-full"
                             >
-                                {{ getEtaStatus(ticket) }}
+                                {{ lateLabel }}
                             </span>
                         </div>
 
-                        <!-- Nomor tiket -->
                         <!-- Nomor tiket -->
                         <p
                             class="mt-4 text-center font-mono text-xs tracking-wider text-gray-500 dark:text-gray-400"
@@ -145,7 +142,7 @@
                             {{ ticket.ticket_number }}
                         </p>
 
-                        <!-- Tombol proses tiket -->
+                        <!-- Tombol proses tiket (hanya untuk tiket open) -->
                         <button
                             v-if="canProcess"
                             type="button"
@@ -212,10 +209,12 @@
                             </div>
 
                             <!-- Tombol edit dan hapus -->
-                            <div class="flex shrink-0 items-start gap-2">
+                            <div
+                                v-if="canTracking"
+                                class="flex shrink-0 items-start gap-2"
+                            >
                                 <button
                                     type="button"
-                                    v-if="canTracking"
                                     @click="openEditTrackingModal(track)"
                                     class="font-medium text-fg-brand transition-all duration-200 ease-in-out active:scale-95 bg-blue-50 hover:bg-blue-100 rounded-full p-2"
                                 >
@@ -223,7 +222,6 @@
                                 </button>
                                 <button
                                     type="button"
-                                    v-if="canTracking"
                                     @click="openDeleteModal(track)"
                                     class="font-medium text-fg-danger transition-all duration-200 ease-in-out active:scale-95 bg-red-50 hover:bg-red-100 rounded-full p-2"
                                 >
@@ -248,6 +246,7 @@
                         <span>Pelacakan</span>
                     </button>
 
+                    <!-- Keterangan kenapa tombol pelacakan tidak muncul -->
                     <div
                         v-else-if="
                             ticket.status !== 'done' &&
@@ -262,7 +261,7 @@
                         }}
                     </div>
 
-                    <!-- Tombol menyelesaikan ticket -->
+                    <!-- Tombol menyelesaikan tiket -->
                     <button
                         v-if="canDone"
                         type="button"
@@ -317,17 +316,10 @@
             <!-- ==================== MODAL ==================== -->
 
             <!-- Modal 1: pilih teknisi untuk memproses tiket -->
-            <Transition
-                enter-active-class="transition ease-out duration-200"
-                enter-from-class="opacity-0"
-                enter-to-class="opacity-100"
-                leave-active-class="transition ease-in duration-150"
-                leave-from-class="opacity-100"
-                leave-to-class="opacity-0"
-            >
+            <Transition name="fade">
                 <div
                     v-if="isTechnicianModalOpen"
-                    class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
+                    :class="overlayClass"
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="technician-title"
@@ -349,7 +341,7 @@
                         <!-- Daftar teknisi: bisa di-scroll kalau banyak -->
                         <div class="mt-4 grid gap-2 overflow-y-auto">
                             <label
-                                v-for="tech in technician"
+                                v-for="tech in technicians"
                                 :key="tech.id"
                                 class="cursor-pointer"
                             >
@@ -403,17 +395,10 @@
             </Transition>
 
             <!-- Modal 2: tambah / edit pelacakan (satu modal untuk dua mode) -->
-            <Transition
-                enter-active-class="transition ease-out duration-200"
-                enter-from-class="opacity-0"
-                enter-to-class="opacity-100"
-                leave-active-class="transition ease-in duration-150"
-                leave-from-class="opacity-100"
-                leave-to-class="opacity-0"
-            >
+            <Transition name="fade">
                 <div
                     v-if="isTrackingModalOpen"
-                    class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
+                    :class="overlayClass"
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="tracking-title"
@@ -429,7 +414,7 @@
                                 class="text-lg font-medium text-heading"
                             >
                                 {{
-                                    editingTrackingId
+                                    isEditingTracking
                                         ? "Edit Pelacakan"
                                         : "Tambah Pelacakan"
                                 }}
@@ -444,7 +429,6 @@
                             </button>
                         </div>
 
-                        <!-- Form -->
                         <form @submit.prevent="submitTracking">
                             <div class="py-2">
                                 <label
@@ -468,7 +452,6 @@
                                 </span>
                             </div>
 
-                            <!-- Tombol -->
                             <div
                                 class="flex justify-end items-center gap-3 pt-4 mt-2"
                             >
@@ -493,17 +476,10 @@
             </Transition>
 
             <!-- Modal 3: konfirmasi hapus pelacakan -->
-            <Transition
-                enter-active-class="transition ease-out duration-200"
-                enter-from-class="opacity-0"
-                enter-to-class="opacity-100"
-                leave-active-class="transition ease-in duration-150"
-                leave-from-class="opacity-100"
-                leave-to-class="opacity-0"
-            >
+            <Transition name="fade">
                 <div
                     v-if="isDeleteModalOpen"
-                    class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
+                    :class="overlayClass"
                     role="alertdialog"
                     aria-modal="true"
                     aria-labelledby="delete-title"
@@ -547,18 +523,11 @@
                 </div>
             </Transition>
 
-            <!-- Modal 4: konfirmasi selesai ticket -->
-            <Transition
-                enter-active-class="transition ease-out duration-200"
-                enter-from-class="opacity-0"
-                enter-to-class="opacity-100"
-                leave-active-class="transition ease-in duration-150"
-                leave-from-class="opacity-100"
-                leave-to-class="opacity-0"
-            >
+            <!-- Modal 4: konfirmasi menyelesaikan tiket -->
+            <Transition name="fade">
                 <div
                     v-if="isDoneModalOpen"
-                    class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
+                    :class="overlayClass"
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="done-title"
@@ -615,17 +584,25 @@ import { ref, computed } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3";
 import { AddIcon } from "@solar-icons/vue/bold/add";
 import { CloseIcon } from "@solar-icons/vue/bold/close";
-import { PenIcon } from "@solar-icons/vue/bold/pen";
-import { TrashBinTrashIcon } from "@solar-icons/vue/bold/trash-bin-trash";
 import { CloudCheckIcon } from "@solar-icons/vue/bold/cloud-check";
-import AdminLayout from "../../Layouts/AdminLayout.vue";
+import { PenIcon } from "@solar-icons/vue/bold/pen";
 import { StarIcon } from "@solar-icons/vue/bold/star";
+import { TrashBinTrashIcon } from "@solar-icons/vue/bold/trash-bin-trash";
+import AdminLayout from "../../Layouts/AdminLayout.vue";
 
 // ==================== DATA DARI CONTROLLER ====================
 const props = defineProps({
     ticket: Object,
-    technician: Array, // daftar teknisi yang bisa dipilih
+    technicians: Array, // daftar teknisi yang bisa dipilih
 });
+
+// URL dasar tiket ini, dipakai oleh semua permintaan ke server di bawah
+const ticketUrl = computed(() => `/admin/ticket/${props.ticket.id}`);
+
+// Latar gelap di belakang modal (dipakai keempat modal).
+// z-index harus lebih tinggi dari header/sidebar (z-99999).
+const overlayClass =
+    "fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-black/50";
 
 // ==================== USER YANG SEDANG LOGIN ====================
 const page = usePage();
@@ -673,24 +650,6 @@ const formatDate = (date) => {
     });
 };
 
-const getEtaStatus = (ticket) => {
-    if (
-        !ticket.eta ||
-        ["resolved", "cancelled", "done"].includes(ticket.status)
-    ) {
-        return null;
-    }
-
-    const diffInHours = Math.floor(
-        (new Date() - new Date(ticket.eta)) / (1000 * 60 * 60),
-    );
-
-    if (diffInHours < 1) return null;
-    if (diffInHours >= 24)
-        return `Lebih lambat ${Math.floor(diffInHours / 24)} hari`;
-    return `Lebih lambat ${diffInHours} jam`;
-};
-
 // Menampilkan "Hari ini", "Kemarin", atau tanggal singkat (misal 13 Okt)
 const getRelativeDay = (dateString) => {
     if (!dateString) return "-";
@@ -714,16 +673,32 @@ const formatTime = (dateString) => {
         .replace(".", ":");
 };
 
+// Teks "Lebih lambat 2 hari" kalau tiket sudah lewat batas waktu (eta), selain itu null
+const lateLabel = computed(() => {
+    const { eta, status } = props.ticket;
+    if (!eta || ["resolved", "cancelled", "done"].includes(status)) {
+        return null;
+    }
+
+    const lateHours = Math.floor(
+        (new Date() - new Date(eta)) / (1000 * 60 * 60),
+    );
+
+    if (lateHours < 1) return null;
+    if (lateHours >= 24)
+        return `Lebih lambat ${Math.floor(lateHours / 24)} hari`;
+    return `Lebih lambat ${lateHours} jam`;
+});
+
 // ==================== PROSES TIKET (PILIH TEKNISI) ====================
 const isTechnicianModalOpen = ref(false);
 const technicianError = ref("");
 
 const processForm = useForm({
-    status: "in progress",
     assigned_to: "",
 });
 
-// Tombol "Proses Tiket" tampil selama tiket belum dibatalkan/ditutup/diproses
+// Tombol "Proses Tiket" hanya tampil untuk tiket yang masih open
 const canProcess = computed(() => props.ticket.status === "open");
 
 const closeTechnicianModal = () => {
@@ -737,7 +712,7 @@ const processTicket = () => {
         return;
     }
 
-    processForm.put(`/admin/ticket/${props.ticket.id}`, {
+    processForm.put(ticketUrl.value, {
         preserveScroll: true,
         onSuccess: () => {
             isTechnicianModalOpen.value = false;
@@ -753,7 +728,7 @@ const processTicket = () => {
 // Kalau tiket belum punya riwayat, pakai array kosong supaya tidak error
 const trackings = computed(() => props.ticket.tracking ?? []);
 
-// Tombol "Pelacakan" hanya tampil untuk teknisi yang ditugaskan di tiket ini
+// Tombol pelacakan (tambah, edit, hapus) hanya untuk teknisi yang ditugaskan di tiket ini
 const canTracking = computed(
     () =>
         Number(props.ticket.assigned_to) === Number(user.value.id) &&
@@ -761,9 +736,12 @@ const canTracking = computed(
 );
 
 // ==================== TAMBAH & EDIT PELACAKAN ====================
-
+// Satu modal untuk dua mode:
+//   editingTrackingId = null    -> mode tambah
+//   editingTrackingId = angka   -> mode edit (angka = id catatan yang diedit)
 const isTrackingModalOpen = ref(false);
 const editingTrackingId = ref(null);
+const isEditingTracking = computed(() => editingTrackingId.value !== null);
 
 const trackingForm = useForm({
     note: "",
@@ -771,9 +749,9 @@ const trackingForm = useForm({
 
 const trackingSubmitText = computed(() => {
     if (trackingForm.processing) {
-        return editingTrackingId.value ? "Updating..." : "Menyimpan...";
+        return isEditingTracking.value ? "Updating..." : "Menyimpan...";
     }
-    return editingTrackingId.value ? "Update" : "Simpan";
+    return isEditingTracking.value ? "Update" : "Simpan";
 });
 
 const openAddTrackingModal = () => {
@@ -803,14 +781,13 @@ const submitTracking = () => {
         },
     };
 
-    // TODO: sesuaikan URL dengan route di routes/web.php
-    if (editingTrackingId.value) {
+    if (isEditingTracking.value) {
         trackingForm.put(
-            `/admin/ticket/${props.ticket.id}/tracking/${editingTrackingId.value}`,
+            `${ticketUrl.value}/tracking/${editingTrackingId.value}`,
             options,
         );
     } else {
-        trackingForm.post(`/admin/ticket/${props.ticket.id}/tracking`, options);
+        trackingForm.post(`${ticketUrl.value}/tracking`, options);
     }
 };
 
@@ -825,6 +802,7 @@ const openDeleteModal = (track) => {
 };
 
 const closeDeleteModal = () => {
+    // Jangan tutup modal saat proses hapus sedang berjalan
     if (isDeleting.value) return;
     isDeleteModalOpen.value = false;
 };
@@ -832,15 +810,12 @@ const closeDeleteModal = () => {
 const deleteTracking = () => {
     if (!trackingToDelete.value) return;
 
-    router.delete(
-        `/admin/ticket/${props.ticket.id}/tracking/${trackingToDelete.value.id}`,
-        {
-            preserveScroll: true,
-            onStart: () => (isDeleting.value = true),
-            onSuccess: () => (isDeleteModalOpen.value = false),
-            onFinish: () => (isDeleting.value = false),
-        },
-    );
+    router.delete(`${ticketUrl.value}/tracking/${trackingToDelete.value.id}`, {
+        preserveScroll: true,
+        onStart: () => (isDeleting.value = true),
+        onSuccess: () => (isDeleteModalOpen.value = false),
+        onFinish: () => (isDeleting.value = false),
+    });
 };
 
 // ==================== MENYELESAIKAN TIKET ====================
@@ -859,7 +834,7 @@ const closeDoneModal = () => {
 };
 
 const processDone = () => {
-    doneForm.put(`/admin/ticket/${props.ticket.id}/done`, {
+    doneForm.put(`${ticketUrl.value}/done`, {
         preserveScroll: true,
         onSuccess: () => {
             isDoneModalOpen.value = false;
@@ -873,7 +848,19 @@ const processDone = () => {
 </script>
 
 <style scoped>
-/* Bagian atas: lekukan di sudut kiri-bawah dan kanan-bawah */
+/* Animasi muncul/hilang untuk modal (dipakai <Transition name="fade">) */
+.fade-enter-active {
+    transition: opacity 200ms ease-out;
+}
+.fade-leave-active {
+    transition: opacity 150ms ease-in;
+}
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+/* Bagian atas tiket: lekukan di sudut kiri-bawah dan kanan-bawah */
 .ticket-top {
     -webkit-mask:
         radial-gradient(circle 12px at 0 100%, #0000 98%, #000) left / 51% 100%
@@ -887,7 +874,7 @@ const processDone = () => {
             100% no-repeat;
 }
 
-/* Bagian bawah: lekukan di sudut kiri-atas dan kanan-atas */
+/* Bagian bawah tiket: lekukan di sudut kiri-atas dan kanan-atas */
 .ticket-bottom {
     -webkit-mask:
         radial-gradient(circle 12px at 0 0, #0000 98%, #000) left / 51% 100%

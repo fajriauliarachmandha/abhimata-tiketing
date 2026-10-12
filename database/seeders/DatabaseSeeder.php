@@ -23,8 +23,8 @@ class DatabaseSeeder extends Seeder
             'department_name' => 'IT Support',
         ]);
         Users::create([
-            'name'=>'Pajrid Aulia Rachmandha',
-            'username' => 'admin',
+            'name'=>'Admin',
+            'email' => 'admin@aej.com',
             'password' => 'admin',
             'department_id' => 1,
             'role' => 'it_support',

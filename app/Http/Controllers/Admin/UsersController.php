@@ -7,6 +7,7 @@ use App\Models\Department;
 use App\Models\Users;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class UsersController extends Controller
@@ -17,54 +18,59 @@ class UsersController extends Controller
         ]);
     }
 
-    public function store(Request $request){
-        $validate = $request->validate([
-            'name'=>'required|string|max:255',
-            'username'=>'required|unique:users,username',
-            'password'=>'required|string|min:6|max:12',
-            'department_id'=>'required|exists:departments,id',
-            'role'=>'required|in:department,it_support'
-        ],[
-            'name.required'=>'Nama wajib diisi',
-            'username.required'=>'Username wajib diisi',
-            'username.unique'=>'Username sudah ada',
-            'password.required'=>'Password wajib diisi',
-            'password.max'=>'Password maksimal 12 karakter',
-            'password.min'=>'Password maksimal 6 karakter',
-            'department_id.required'=>'Departemen wajib dipilih',
-            'role.required'=>'Role wajib dipilih'
-        ]);
+    public function store(Request $request)
+{
+    $validated = $request->validate([
+        'name'          => 'required|string|max:255',
+        'email'         => 'required|email|max:255|unique:users,email',
+        'password'      => 'required|string|min:6|max:12',
+        'department_id' => 'required|exists:departments,id',
+        'role'          => 'required|in:department,it_support',
+    ], [
+        'name.required'          => 'Nama wajib diisi',
+        'email.required'         => 'Email wajib diisi',
+        'email.email'            => 'Format email tidak valid, harus memakai @ (contoh: nama@perusahaan.com)',
+        'email.unique'           => 'Email sudah ada',
+        'password.required'      => 'Password wajib diisi',
+        'password.min'           => 'Password minimal 6 karakter',
+        'password.max'           => 'Password maksimal 12 karakter',
+        'department_id.required' => 'Departemen wajib dipilih',
+        'role.required'          => 'Role wajib dipilih',
+    ]);
 
-        Users::create($validate);
+    Users::create($validated);
 
-        return redirect()->back()->with('success','Data pengguna berhasil dimasukan');
+    return redirect()->back()->with('success', 'Data pengguna berhasil dimasukkan');
+}
+
+   public function update(Request $request, Users $users)
+{
+    $validated = $request->validate([
+        'name'          => 'required|string|max:255',
+        'email'         => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($users->id)],
+        'password'      => 'nullable|string|min:6|max:12',
+        'department_id' => 'required|exists:departments,id',
+        'role'          => 'required|in:department,it_support',
+    ], [
+        'name.required'          => 'Nama wajib diisi',
+        'email.required'         => 'Email wajib diisi',
+        'email.email'            => 'Format email tidak valid, harus memakai @ (contoh: nama@perusahaan.com)',
+        'email.unique'           => 'Email sudah ada',
+        'password.min'           => 'Password minimal 6 karakter',
+        'password.max'           => 'Password maksimal 12 karakter',
+        'department_id.required' => 'Departemen wajib dipilih',
+        'role.required'          => 'Role wajib dipilih',
+    ]);
+
+    // Password dikosongkan = tidak diganti
+    if (empty($validated['password'])) {
+        unset($validated['password']);
     }
 
-    public function update(Request $request, Users $users){
-        $validate = $request->validate([
-            'name'=>'required|string|max:255',
-            'username'=>'required|unique:users,username,'.$users->id,
-            'password'=>'nullable|string|min:6|max:12',
-            'department_id'=>'required|exists:departments,id',
-            'role'=>'required|in:department,it_support'
-        ],[
-            'name.required'=>'Nama wajib diisi',
-            'username.required'=>'Username wajib diisi',
-            'username.unique'=>'Username sudah ada',
-            'password.max'=>'Password maksimal 12 karakter',
-            'password.min'=>'Password maksimal 6 karakter',
-            'department_id.required'=>'Departemen wajib dipilih',
-            'role.required'=>'Role wajib dipilih'
-        ]);
+    $users->update($validated);
 
-        if (empty($validate['password'])){
-            unset($validate['password']);
-        }
-
-        $users->update($validate);
-
-        return redirect()->back()->with('success','Data pengguna berhasil diubah');
-    }
+    return redirect()->back()->with('success', 'Data pengguna berhasil diubah');
+}
 
     public function destroy(Users $users){
         try{

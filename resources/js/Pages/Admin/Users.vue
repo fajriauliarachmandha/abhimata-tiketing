@@ -1,9 +1,9 @@
 <template>
     <AdminLayout>
         <main>
-            <!-- Search & Add Data -->
+            <!-- ==================== BAGIAN ATAS: pencarian + tombol tambah ==================== -->
             <div class="flex items-center justify-between space-x-2 py-4">
-                <label for="input-group-1" class="sr-only">Search</label>
+                <label for="search" class="sr-only">Search</label>
                 <div class="relative">
                     <div
                         class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none"
@@ -15,7 +15,7 @@
                     </div>
                     <input
                         type="text"
-                        id="input-group-1"
+                        id="search"
                         v-model="searchQuery"
                         class="block w-full h-10 ps-9 pe-3 text-sm text-heading bg-white border border-default-medium rounded-sm shadow-xs placeholder:text-body focus:ring-brand focus:border-brand dark:bg-gray-900 dark:text-white dark:border-gray-700 dark:placeholder:text-gray-500"
                         placeholder="Pencarian . . ."
@@ -31,7 +31,7 @@
                 </button>
             </div>
 
-            <!-- Table Container -->
+            <!-- ==================== TABEL PENGGUNA ==================== -->
             <div
                 class="relative max-w-full overflow-x-auto bg-neutral-primary-soft shadow-xs border border-default rounded-sm"
             >
@@ -42,20 +42,14 @@
                         class="text-sm text-body bg-neutral-secondary-medium border-b border-t border-default-medium"
                     >
                         <tr>
-                            <th scope="col" class="px-6 py-3 font-medium">
-                                Nama
-                            </th>
-                            <th scope="col" class="px-6 py-3 font-medium">
-                                Username
-                            </th>
-                            <th scope="col" class="px-6 py-3 font-medium">
-                                Departemen
-                            </th>
-                            <th scope="col" class="px-6 py-3 font-medium">
-                                Role
-                            </th>
-                            <th scope="col" class="px-6 py-3 font-medium">
-                                Aksi
+                            <!-- Judul kolom dibuat dari array `tableHeaders` di bawah -->
+                            <th
+                                v-for="header in tableHeaders"
+                                :key="header"
+                                scope="col"
+                                class="px-6 py-3 font-medium"
+                            >
+                                {{ header }}
                             </th>
                         </tr>
                     </thead>
@@ -70,7 +64,7 @@
                             >
                                 {{ user.name }}
                             </td>
-                            <td class="px-6 py-4">{{ user.username }}</td>
+                            <td class="px-6 py-4">{{ user.email }}</td>
                             <td class="px-6 py-4">
                                 {{ user.department?.department_name ?? "-" }}
                             </td>
@@ -80,7 +74,7 @@
                             <td class="px-6 py-4 space-x-3 whitespace-nowrap">
                                 <button
                                     type="button"
-                                    @click="openUpdateModal(user)"
+                                    @click="openEditModal(user)"
                                     class="font-medium text-fg-brand transition-all duration-200 ease-in-out active:scale-95 bg-blue-50 hover:bg-blue-100 rounded-full p-2 dark:bg-blue-500/15 dark:hover:bg-blue-500/25 dark:text-blue-400"
                                 >
                                     <PenIcon size="24" />
@@ -94,9 +88,11 @@
                                 </button>
                             </td>
                         </tr>
+
+                        <!-- Pesan kalau tidak ada data -->
                         <tr v-if="filteredUsers.length === 0">
                             <td
-                                colspan="5"
+                                :colspan="tableHeaders.length"
                                 class="px-6 py-4 text-center text-body"
                             >
                                 Tidak ada data yang cocok.
@@ -106,22 +102,15 @@
                 </table>
             </div>
 
-            <!-- Modal tambah/edit -->
-            <Transition
-                enter-active-class="transition ease-out duration-200"
-                enter-from-class="opacity-0"
-                enter-to-class="opacity-100"
-                leave-active-class="transition ease-in duration-150"
-                leave-from-class="opacity-100"
-                leave-to-class="opacity-0"
-            >
+            <!-- ==================== MODAL TAMBAH / EDIT ==================== -->
+            <Transition name="fade">
                 <div
-                    v-if="isModalOpen"
+                    v-if="isFormModalOpen"
                     class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="modal-title"
-                    @click.self="closeModal"
+                    @click.self="closeFormModal"
                 >
                     <div
                         class="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-neutral-primary-soft rounded-sm border border-default shadow-lg p-5"
@@ -131,15 +120,11 @@
                                 id="modal-title"
                                 class="text-lg font-medium text-heading"
                             >
-                                {{
-                                    editingId
-                                        ? "Edit Pengguna"
-                                        : "Tambah Pengguna"
-                                }}
+                                {{ modalTitle }}
                             </h3>
                             <button
                                 type="button"
-                                @click="closeModal"
+                                @click="closeFormModal"
                                 class="text-body bg-transparent hover:text-heading hover:bg-neutral-tertiary rounded-sm w-9 h-9 flex items-center justify-center ms-auto transition-all duration-200 ease-in-out active:scale-95"
                             >
                                 <CloseIcon size="24" />
@@ -147,8 +132,9 @@
                             </button>
                         </div>
 
-                        <form @submit.prevent="handleSubmit">
+                        <form @submit.prevent="submitForm">
                             <div class="grid gap-4 grid-cols-2 py-2">
+                                <!-- Nama -->
                                 <div class="col-span-2">
                                     <label
                                         for="name"
@@ -160,7 +146,7 @@
                                         type="text"
                                         id="name"
                                         v-model="form.name"
-                                        class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-sm focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
+                                        :class="inputClass"
                                         required
                                     />
                                     <span
@@ -171,28 +157,30 @@
                                     </span>
                                 </div>
 
+                                <!-- Email -->
                                 <div class="col-span-2">
                                     <label
-                                        for="username"
+                                        for="email"
                                         class="block mb-2.5 text-sm font-medium text-heading"
                                     >
-                                        Username
+                                        Email
                                     </label>
                                     <input
                                         type="text"
-                                        id="username"
-                                        v-model="form.username"
-                                        class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-sm focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
+                                        id="email"
+                                        v-model="form.email"
+                                        :class="inputClass"
                                         required
                                     />
                                     <span
-                                        v-if="form.errors.username"
+                                        v-if="form.errors.email"
                                         class="text-xs text-red-500 mt-1 block"
                                     >
-                                        {{ form.errors.username }}
+                                        {{ form.errors.email }}
                                     </span>
                                 </div>
 
+                                <!-- Password (saat edit boleh dikosongkan) -->
                                 <div class="col-span-2">
                                     <label
                                         for="password"
@@ -204,10 +192,10 @@
                                         type="password"
                                         id="password"
                                         v-model="form.password"
-                                        class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-sm focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                                        :required="!editingId"
+                                        :class="inputClass"
+                                        :required="!isEditing"
                                         :placeholder="
-                                            editingId
+                                            isEditing
                                                 ? 'Kosongkan jika tidak ingin mengganti password'
                                                 : ''
                                         "
@@ -220,6 +208,7 @@
                                     </span>
                                 </div>
 
+                                <!-- Departemen (pilihan berbentuk tombol bulat) -->
                                 <div class="col-span-2">
                                     <span
                                         class="block mb-2.5 text-sm font-medium text-heading"
@@ -228,21 +217,19 @@
                                     </span>
                                     <div class="flex flex-wrap gap-2">
                                         <label
-                                            v-for="dept in departments"
-                                            :key="dept.id"
+                                            v-for="department in departments"
+                                            :key="department.id"
                                             class="cursor-pointer"
                                         >
                                             <input
                                                 type="radio"
                                                 name="department_id"
-                                                :value="dept.id"
+                                                :value="department.id"
                                                 v-model="form.department_id"
                                                 class="sr-only peer"
                                             />
-                                            <div
-                                                class="px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-full border border-gray-200 transition-all duration-200 ease-in-out active:scale-95 peer-checked:bg-dark peer-checked:text-white peer-checked:border-dark peer-checked:shadow-md peer-focus-visible:ring-2 peer-focus-visible:ring-brand"
-                                            >
-                                                {{ dept.department_name }}
+                                            <div :class="chipClass">
+                                                {{ department.department_name }}
                                             </div>
                                         </label>
                                     </div>
@@ -254,6 +241,7 @@
                                     </span>
                                 </div>
 
+                                <!-- Role (pilihan berbentuk tombol bulat) -->
                                 <div class="col-span-2">
                                     <span
                                         class="block mb-2.5 text-sm font-medium text-heading"
@@ -262,21 +250,19 @@
                                     </span>
                                     <div class="flex flex-wrap gap-2">
                                         <label
-                                            v-for="item in roleOptions"
-                                            :key="item.value"
+                                            v-for="role in roleOptions"
+                                            :key="role.value"
                                             class="cursor-pointer"
                                         >
                                             <input
                                                 type="radio"
                                                 name="role"
-                                                :value="item.value"
+                                                :value="role.value"
                                                 v-model="form.role"
                                                 class="sr-only peer"
                                             />
-                                            <div
-                                                class="px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-full border border-gray-200 transition-all duration-200 ease-in-out active:scale-95 peer-checked:bg-dark peer-checked:text-white peer-checked:border-dark peer-checked:shadow-md peer-focus-visible:ring-2 peer-focus-visible:ring-brand"
-                                            >
-                                                {{ item.label }}
+                                            <div :class="chipClass">
+                                                {{ role.label }}
                                             </div>
                                         </label>
                                     </div>
@@ -294,7 +280,7 @@
                             >
                                 <button
                                     type="button"
-                                    @click="closeModal"
+                                    @click="closeFormModal"
                                     class="text-body bg-neutral-secondary-medium border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading shadow-xs font-medium leading-5 rounded-full text-sm px-4 py-3 focus:outline-none transition-all duration-200 ease-in-out active:scale-95"
                                 >
                                     Cancel
@@ -304,15 +290,7 @@
                                     :disabled="form.processing"
                                     class="inline-flex items-center text-white bg-primary-500 hover:bg-primary-600 border border-transparent shadow-xs font-medium leading-5 rounded-full text-sm px-4 py-3 focus:outline-none transition-all duration-200 ease-in-out active:scale-95 disabled:opacity-60"
                                 >
-                                    {{
-                                        form.processing
-                                            ? editingId
-                                                ? "Updating..."
-                                                : "Saving..."
-                                            : editingId
-                                              ? "Update"
-                                              : "Simpan"
-                                    }}
+                                    {{ submitLabel }}
                                 </button>
                             </div>
                         </form>
@@ -320,17 +298,10 @@
                 </div>
             </Transition>
 
-            <!-- Modal konfirmasi hapus -->
-            <Transition
-                enter-active-class="transition ease-out duration-200"
-                enter-from-class="opacity-0"
-                enter-to-class="opacity-100"
-                leave-active-class="transition ease-in duration-150"
-                leave-from-class="opacity-100"
-                leave-to-class="opacity-0"
-            >
+            <!-- ==================== MODAL KONFIRMASI HAPUS ==================== -->
+            <Transition name="fade">
                 <div
-                    v-if="isDeleteOpen"
+                    v-if="isDeleteModalOpen"
                     class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
                     role="alertdialog"
                     aria-modal="true"
@@ -356,7 +327,7 @@
                         <p id="delete-desc" class="mt-2 text-sm text-body">
                             Akun
                             <span class="font-semibold text-heading">
-                                {{ deleteTarget?.name }}
+                                {{ userToDelete?.name }}
                             </span>
                             akan dihapus permanen dan tidak bisa dikembalikan.
                         </p>
@@ -397,10 +368,31 @@ import { CloseIcon } from "@solar-icons/vue/bold/close";
 import { MinimalisticMagnifierIcon } from "@solar-icons/vue/linear/minimalistic-magnifier";
 import { AddIcon } from "@solar-icons/vue/bold/add";
 
+// ==================== DATA DARI LARAVEL ====================
+// `users` dan `departments` dikirim dari UsersController lewat Inertia::render(...)
 const props = defineProps({
     users: Array,
     departments: Array,
 });
+
+// ==================== DATA TETAP (konstanta) ====================
+const tableHeaders = ["Nama", "Email", "Departemen", "Role", "Aksi"];
+
+const roleOptions = [
+    { value: "department", label: "Department" },
+    { value: "it_support", label: "IT Support" },
+];
+
+// Ubah nilai role dari database ("it_support") jadi tulisan yang enak dibaca ("IT Support")
+const roleLabel = (role) =>
+    roleOptions.find((option) => option.value === role)?.label ?? role;
+
+// Class yang dipakai berulang di form
+const inputClass =
+    "bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-sm focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body";
+
+const chipClass =
+    "px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-full border border-gray-200 transition-all duration-200 ease-in-out active:scale-95 peer-checked:bg-dark peer-checked:text-white peer-checked:border-dark peer-checked:shadow-md peer-focus-visible:ring-2 peer-focus-visible:ring-brand";
 
 // ==================== NOTIFIKASI (SWEETALERT) ====================
 const page = usePage();
@@ -413,7 +405,7 @@ const Toast = Swal.mixin({
     timerProgressBar: true,
 });
 
-// Pesan dari controller (->with('success'/'error', ...)) tampil sebagai toast
+// Pesan dari controller (->with('success', ...) / ->with('error', ...)) tampil sebagai toast
 watch(
     () => page.props.flash,
     (flash) => {
@@ -423,64 +415,90 @@ watch(
     },
     { deep: true },
 );
-// ================================================
 
-const roleOptions = [
-    { value: "department", label: "Department" },
-    { value: "it_support", label: "IT Support" },
-];
-const roleLabel = (role) =>
-    roleOptions.find((o) => o.value === role)?.label ?? role;
-
+// ==================== PENCARIAN ====================
 const searchQuery = ref("");
 
-// Form Tambah dan Edit
+const filteredUsers = computed(() => {
+    const keyword = searchQuery.value.trim().toLowerCase();
+    if (!keyword) return props.users; // tidak ada pencarian = tampilkan semua
+
+    return props.users.filter((user) => {
+        const searchableFields = [
+            user.name,
+            user.email,
+            user.department?.department_name,
+            roleLabel(user.role),
+        ];
+
+        return searchableFields.some((field) =>
+            field?.toLowerCase().includes(keyword),
+        );
+    });
+});
+
+// ==================== FORM TAMBAH / EDIT ====================
+// useForm dari Inertia: menyimpan isi form, error validasi, dan status "sedang mengirim"
 const form = useForm({
     name: "",
-    username: "",
+    email: "",
     password: "",
     department_id: "",
     role: "",
 });
 
+const isFormModalOpen = ref(false);
+
+// id pengguna yang sedang diedit. null = sedang menambah pengguna baru
 const editingId = ref(null);
-const isModalOpen = ref(false);
+const isEditing = computed(() => editingId.value !== null);
+
+// Teks yang berubah tergantung mode tambah / edit
+const modalTitle = computed(() =>
+    isEditing.value ? "Edit Pengguna" : "Tambah Pengguna",
+);
+
+const submitLabel = computed(() => {
+    if (form.processing) {
+        return isEditing.value ? "Updating..." : "Saving...";
+    }
+    return isEditing.value ? "Update" : "Simpan";
+});
 
 const openAddModal = () => {
     editingId.value = null;
-    form.reset();
+    form.reset(); // kosongkan isi form
     form.clearErrors();
-    isModalOpen.value = true;
+    isFormModalOpen.value = true;
 };
 
-const openUpdateModal = (user) => {
+const openEditModal = (user) => {
     editingId.value = user.id;
     form.name = user.name;
-    form.username = user.username;
+    form.email = user.email;
     form.department_id = user.department_id;
     form.role = user.role;
-    form.password = "";
+    form.password = ""; // password lama tidak ditampilkan
     form.clearErrors();
-    isModalOpen.value = true;
+    isFormModalOpen.value = true;
 };
 
-const closeModal = () => {
-    isModalOpen.value = false;
+const closeFormModal = () => {
+    isFormModalOpen.value = false;
 };
 
-const handleSubmit = () => {
-    const isEdit = !!editingId.value;
+const submitForm = () => {
     const options = {
         preserveScroll: true,
         onSuccess: () => {
-            closeModal();
+            closeFormModal();
             form.reset();
         },
+        // Kalau gagal, modal tetap terbuka supaya isian tidak hilang
         onError: (errors) => {
-            // modal tetap terbuka supaya data tidak hilang
             Swal.fire({
                 icon: "error",
-                title: isEdit
+                title: isEditing.value
                     ? "Gagal memperbarui Pengguna"
                     : "Gagal menambahkan Pengguna",
                 text:
@@ -490,63 +508,69 @@ const handleSubmit = () => {
         },
     };
 
-    if (editingId.value) {
+    if (isEditing.value) {
         form.put(`/admin/users/${editingId.value}`, options);
     } else {
         form.post("/admin/users", options);
     }
 };
 
-// Modal hapus
-const isDeleteOpen = ref(false);
+// ==================== MODAL HAPUS ====================
+const isDeleteModalOpen = ref(false);
 const isDeleting = ref(false);
-const deleteTarget = ref(null);
+const userToDelete = ref(null);
 
 const openDeleteModal = (user) => {
-    deleteTarget.value = user;
-    isDeleteOpen.value = true;
+    userToDelete.value = user;
+    isDeleteModalOpen.value = true;
 };
 
 const closeDeleteModal = () => {
-    if (isDeleting.value) return;
-    isDeleteOpen.value = false;
+    if (isDeleting.value) return; // jangan tutup saat proses hapus berjalan
+    isDeleteModalOpen.value = false;
 };
 
 const confirmDelete = () => {
-    if (!deleteTarget.value) return;
+    if (!userToDelete.value) return;
 
-    router.delete(`/admin/users/${deleteTarget.value.id}`, {
+    router.delete(`/admin/users/${userToDelete.value.id}`, {
         preserveScroll: true,
         onStart: () => (isDeleting.value = true),
-        onSuccess: () => (isDeleteOpen.value = false),
-        onError: (errors) => alert(Object.values(errors)[0]),
+        onSuccess: () => (isDeleteModalOpen.value = false),
+        onError: (errors) => {
+            Swal.fire({
+                icon: "error",
+                title: "Gagal menghapus Pengguna",
+                text: Object.values(errors)[0],
+            });
+        },
         onFinish: () => (isDeleting.value = false),
     });
 };
 
+// ==================== TOMBOL ESCAPE ====================
 // Escape menutup modal yang sedang terbuka
-const onKeydown = (e) => {
-    if (e.key !== "Escape") return;
-    if (isDeleteOpen.value) closeDeleteModal();
-    else if (isModalOpen.value) closeModal();
-};
-onMounted(() => window.addEventListener("keydown", onKeydown));
-onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
+const closeOnEscape = (event) => {
+    if (event.key !== "Escape") return;
 
-// search
-const filteredUsers = computed(() => {
-    if (!searchQuery.value.trim()) {
-        return props.users;
-    }
-    const q = searchQuery.value.toLowerCase();
-    return props.users.filter(
-        (user) =>
-            user.name.toLowerCase().includes(q) ||
-            user.username.toLowerCase().includes(q) ||
-            (user.department?.department_name ?? "")
-                .toLowerCase()
-                .includes(q) ||
-            roleLabel(user.role).toLowerCase().includes(q),
-    );
-});
+    if (isDeleteModalOpen.value) closeDeleteModal();
+    else if (isFormModalOpen.value) closeFormModal();
+};
+
+onMounted(() => window.addEventListener("keydown", closeOnEscape));
+onBeforeUnmount(() => window.removeEventListener("keydown", closeOnEscape));
 </script>
+
+<style scoped>
+/* Animasi muncul/hilang untuk kedua modal (dipakai lewat <Transition name="fade">) */
+.fade-enter-active {
+    transition: opacity 200ms ease-out;
+}
+.fade-leave-active {
+    transition: opacity 150ms ease-in;
+}
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>

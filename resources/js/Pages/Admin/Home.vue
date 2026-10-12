@@ -1,7 +1,7 @@
 <template>
     <AdminLayout>
         <main>
-            <!-- Header: profil (kiri) + filter (kanan di laptop) -->
+            <!-- ==================== HEADER: profil + filter status ==================== -->
             <div class="lg:flex lg:items-center lg:justify-between lg:gap-6">
                 <div class="flex items-center gap-2.5 ps-0.5">
                     <img
@@ -20,27 +20,21 @@
                                     : "Departemen IT Support"
                             }}
                         </div>
-                        <!-- <span
-                        class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 text-xs font-medium px-1.5 py-0.5 rounded-full"
-                    >
-                        <StarIcon size="12" />
-                        17 Stars
-                    </span> -->
                     </div>
                 </div>
 
-                <!-- Filter -->
+                <!-- Tombol filter status -->
                 <div
                     class="sticky top-[72px] z-10 flex gap-2 py-2 -mx-4 px-4 overflow-x-auto lg:static lg:mx-0 lg:px-0 lg:py-0 lg:overflow-visible"
                 >
                     <button
-                        v-for="status in statusFilter"
+                        v-for="status in statusOptions"
                         :key="status.value"
                         type="button"
-                        @click="activeFilter = status.value"
+                        @click="activeStatus = status.value"
                         class="px-3 py-2 text-xs lg:text-sm rounded-full whitespace-nowrap transition active:scale-95"
                         :class="
-                            activeFilter === status.value
+                            activeStatus === status.value
                                 ? 'bg-dark text-white'
                                 : 'bg-white text-gray-700 hover:bg-gray-200'
                         "
@@ -52,7 +46,7 @@
 
             <!-- ==================== CHART ==================== -->
             <div class="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-2">
-                <!-- Tiket per bulan -->
+                <!-- Chart 1: tiket per bulan -->
                 <div
                     class="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/[0.03]"
                 >
@@ -69,6 +63,8 @@
                                 Jumlah pengajuan tiket tahun {{ chart.year }}
                             </p>
                         </div>
+
+                        <!-- Dropdown tahun: .number supaya nilainya angka, bukan teks -->
                         <select
                             v-model.number="selectedYear"
                             @change="changeYear"
@@ -84,6 +80,7 @@
                         </select>
                     </div>
 
+                    <!-- :key membuat chart digambar ulang saat tahun berganti -->
                     <VueApexCharts
                         :key="`monthly-${chart.year}`"
                         type="bar"
@@ -93,7 +90,7 @@
                     />
                 </div>
 
-                <!-- Departemen terbanyak -->
+                <!-- Chart 2: departemen terbanyak -->
                 <div
                     class="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/[0.03]"
                 >
@@ -127,6 +124,7 @@
                 </div>
             </div>
 
+            <!-- ==================== DAFTAR ORDER ==================== -->
             <div
                 class="pt-4 pb-4 font-semibold text-lg lg:text-2xl text-heading"
             >
@@ -154,7 +152,7 @@
                     >
                         <!-- drop-shadow di pembungkus, supaya bayangan ikut bentuk berlekuk -->
                         <div class="flex h-full flex-col drop-shadow-lg">
-                            <!-- Bagian atas -->
+                            <!-- Bagian atas kartu -->
                             <div
                                 class="ticket-top flex flex-1 flex-col rounded-t-2xl bg-white dark:bg-gray-800 p-5 pb-6"
                             >
@@ -190,9 +188,7 @@
                                     {{ ticket.description }}
                                 </p>
 
-                                <span
-                                    class="inline-flex w-fit items-center gap-1.5 rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 mt-1"
-                                >
+                                <span class="mt-1 w-fit" :class="pillClass">
                                     <ProgrammingIcon size="15" />
                                     {{ ticket.category }}
                                 </span>
@@ -207,15 +203,14 @@
                                         class="text-sm font-semibold text-gray-900 dark:text-white"
                                     >
                                         {{
-                                            ticket.technician
-                                                ? ticket.technician.name
-                                                : "Belum ada teknisi"
+                                            ticket.technician?.name ??
+                                            "Belum ada teknisi"
                                         }}
                                     </p>
                                 </div>
                             </div>
 
-                            <!-- Bagian bawah -->
+                            <!-- Bagian bawah kartu -->
                             <div
                                 class="ticket-bottom relative rounded-b-2xl bg-white dark:bg-gray-800 p-5 pt-6"
                             >
@@ -225,18 +220,18 @@
                                 ></div>
 
                                 <div class="flex flex-wrap items-center gap-2">
-                                    <span
-                                        class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300"
-                                    >
+                                    <span :class="pillClass">
                                         <CalendarIcon size="15" />
                                         {{ formatDate(ticket.created_at) }}
                                     </span>
+
+                                    <!-- Muncul hanya kalau tiket terlambat -->
                                     <span
-                                        v-if="getEtaStatus(ticket)"
+                                        v-if="getLateText(ticket)"
                                         class="inline-flex items-center gap-1.5 rounded-full bg-red-100 dark:bg-red-900/40 px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-400"
                                     >
                                         <ClockCircleIcon size="15" />
-                                        {{ getEtaStatus(ticket) }}
+                                        {{ getLateText(ticket) }}
                                     </span>
                                 </div>
 
@@ -270,53 +265,61 @@
 <script setup>
 import { computed, ref } from "vue";
 import { Link, router, usePage } from "@inertiajs/vue3";
+import VueApexCharts from "vue3-apexcharts";
 import { ProgrammingIcon } from "@solar-icons/vue/bold/programming";
 import { CalendarIcon } from "@solar-icons/vue/bold/calendar";
 import { ClockCircleIcon } from "@solar-icons/vue/bold/clock-circle";
 import { DangerTriangleIcon } from "@solar-icons/vue/bold/danger-triangle";
 import AdminLayout from "../../Layouts/AdminLayout.vue";
-import VueApexCharts from "vue3-apexcharts";
 
+// ==================== DATA DARI LARAVEL ====================
+// `tickets` dan `chart` dikirim dari HomeController lewat Inertia::render(...)
 const props = defineProps({
     tickets: Array,
     chart: Object,
 });
 
+// Data user yang sedang login (dibagikan Inertia ke semua halaman)
 const page = usePage();
 const user = computed(() => page.props.auth.user);
 
-const randomSeed = ref(Math.random().toString(36).substring(2, 10));
-const avatarUrl = ref(
-    `https://api.dicebear.com/10.x/sprouts/svg?tags=animation&seed=${randomSeed.value}`,
-);
+// Avatar acak, dibuat sekali saat halaman dibuka
+const avatarSeed = Math.random().toString(36).substring(2, 10);
+const avatarUrl = `https://api.dicebear.com/10.x/sprouts/svg?tags=animation&seed=${avatarSeed}`;
 
-// Filter
-const statusFilter = [
+// ==================== FILTER STATUS ====================
+const statusOptions = [
     { label: "Semua", value: "all" },
     { label: "Open", value: "open" },
     { label: "Di Proses", value: "in progress" },
     { label: "Selesai", value: "done" },
 ];
-const activeFilter = ref("all");
+const activeStatus = ref("all");
 
 const filteredTickets = computed(() => {
-    if (activeFilter.value === "all") {
+    if (activeStatus.value === "all") {
         return props.tickets;
     }
-    return props.tickets.filter((t) => t.status === activeFilter.value);
+    return props.tickets.filter(
+        (ticket) => ticket.status === activeStatus.value,
+    );
 });
 
-// Warna
+// ==================== WARNA & TAMPILAN KARTU ====================
+// Class "pil" abu-abu yang dipakai berulang (kategori & tanggal)
+const pillClass =
+    "inline-flex items-center gap-1.5 rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300";
+
 const getPriorityClass = (priority) => {
     switch (priority) {
         case "Low":
-            return "bg-yellow-100 text-yellow-800 ";
+            return "bg-yellow-100 text-yellow-800";
         case "Medium":
             return "bg-amber-100 text-amber-800";
         case "High":
-            return "bg-orange-100 text-orange-800 ";
+            return "bg-orange-100 text-orange-800";
         case "Critical":
-            return "bg-red-100 text-red-800 ";
+            return "bg-red-100 text-red-800";
         default:
             return "bg-gray-100 text-gray-800";
     }
@@ -336,9 +339,10 @@ const getStatusClass = (status) => {
     }
 };
 
-// Tanggal dan keterlambatan
+// ==================== TANGGAL & KETERLAMBATAN ====================
 const formatDate = (date) => {
     if (!date) return "-";
+
     return new Date(date).toLocaleDateString("id-ID", {
         day: "numeric",
         month: "short",
@@ -346,28 +350,28 @@ const formatDate = (date) => {
     });
 };
 
-const getEtaStatus = (ticket) => {
-    if (
-        !ticket.eta ||
-        ["resolved", "cancelled", "done"].includes(ticket.status)
-    ) {
-        return null;
-    }
+// Teks keterlambatan, misal "Lebih lambat 3 jam". Mengembalikan null kalau tidak terlambat.
+const getLateText = (ticket) => {
+    const isFinished = ["resolved", "cancelled", "done"].includes(
+        ticket.status,
+    );
+    if (!ticket.eta || isFinished) return null;
 
-    const diffInHours = Math.floor(
+    const hoursLate = Math.floor(
         (new Date() - new Date(ticket.eta)) / (1000 * 60 * 60),
     );
 
-    if (diffInHours < 1) return null;
-    if (diffInHours >= 24)
-        return `Lebih lambat ${Math.floor(diffInHours / 24)} hari`;
-    return `Lebih lambat ${diffInHours} jam`;
+    if (hoursLate < 1) return null; // belum lewat ETA
+    if (hoursLate >= 24)
+        return `Lebih lambat ${Math.floor(hoursLate / 24)} hari`;
+    return `Lebih lambat ${hoursLate} jam`;
 };
 
 // ==================== CHART ====================
 const selectedYear = ref(props.chart.year);
 
-// Ganti tahun: hanya data chart yang dimuat ulang, daftar tiket tidak ikut
+// Saat tahun diganti, minta ulang HANYA data `chart` ke Laravel
+// (daftar tiket tidak ikut dimuat ulang)
 const changeYear = () => {
     router.get(
         "/admin/home",
@@ -381,18 +385,40 @@ const changeYear = () => {
     );
 };
 
+// Pengaturan dasar yang dipakai kedua chart
 const baseChart = {
     fontFamily: "Outfit, sans-serif",
     toolbar: { show: false },
 };
 
-// ----- Tiket per bulan -----
+const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "Mei",
+    "Jun",
+    "Jul",
+    "Agu",
+    "Sep",
+    "Okt",
+    "Nov",
+    "Des",
+];
+
+// ----- Chart 1: tiket per bulan -----
 const monthlySeries = computed(() => [
     { name: "Tiket", data: props.chart.monthly },
 ]);
 
 const monthlyOptions = computed(() => {
-    const max = Math.max(...props.chart.monthly, 0);
+    const maxValue = Math.max(...props.chart.monthly, 0);
+
+    // Kalau datanya kecil (maks 5), paksa sumbu Y berupa bilangan bulat (0, 1, 2, ...)
+    const smallDataAxis =
+        maxValue <= 5
+            ? { max: Math.max(maxValue, 1), tickAmount: Math.max(maxValue, 1) }
+            : {};
 
     return {
         chart: { ...baseChart, type: "bar" },
@@ -406,29 +432,13 @@ const monthlyOptions = computed(() => {
         },
         dataLabels: { enabled: false },
         xaxis: {
-            categories: [
-                "Jan",
-                "Feb",
-                "Mar",
-                "Apr",
-                "Mei",
-                "Jun",
-                "Jul",
-                "Agu",
-                "Sep",
-                "Okt",
-                "Nov",
-                "Des",
-            ],
+            categories: monthNames,
             axisBorder: { show: false },
             axisTicks: { show: false },
         },
         yaxis: {
             min: 0,
-            // Data kecil: paksa sumbu Y berupa bilangan bulat (0, 1, 2, ...)
-            ...(max <= 5
-                ? { max: Math.max(max, 1), tickAmount: Math.max(max, 1) }
-                : {}),
+            ...smallDataAxis,
             labels: { formatter: (value) => Math.round(value) },
         },
         grid: { yaxis: { lines: { show: true } } },
@@ -436,7 +446,7 @@ const monthlyOptions = computed(() => {
     };
 });
 
-// ----- Departemen terbanyak -----
+// ----- Chart 2: departemen terbanyak -----
 const departmentSeries = computed(() => [
     {
         name: "Tiket",
@@ -471,8 +481,9 @@ const departmentOptions = computed(() => ({
     tooltip: { y: { formatter: (value) => `${value} tiket` } },
 }));
 </script>
+
 <style scoped>
-/* Bagian atas: lekukan di sudut kiri-bawah dan kanan-bawah */
+/* Lekukan tiket (efek sobekan karcis): atas = sudut kiri-bawah & kanan-bawah */
 .ticket-top {
     -webkit-mask:
         radial-gradient(circle 12px at 0 100%, #0000 98%, #000) left / 51% 100%
@@ -486,7 +497,7 @@ const departmentOptions = computed(() => ({
             100% no-repeat;
 }
 
-/* Bagian bawah: lekukan di sudut kiri-atas dan kanan-atas */
+/* Bagian bawah: lekukan di sudut kiri-atas & kanan-atas */
 .ticket-bottom {
     -webkit-mask:
         radial-gradient(circle 12px at 0 0, #0000 98%, #000) left / 51% 100%

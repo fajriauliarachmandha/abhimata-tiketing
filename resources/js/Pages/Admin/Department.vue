@@ -35,20 +35,16 @@
             <div
                 class="relative max-w-full overflow-x-auto bg-neutral-primary-soft shadow-xs border border-default rounded-sm"
             >
-                <table class="w-full min-w-[720px] text-sm text-left text-body">
+                <table class="w-full min-w-[480px] text-sm text-left text-body">
                     <thead
                         class="text-sm text-body bg-neutral-secondary-medium border-b border-t border-default-medium"
                     >
                         <tr>
-                            <th scope="col" class="px-6 py-3 font-medium">
+                            <th class="px-6 py-3 font-medium">
                                 Kode Departemen
                             </th>
-                            <th scope="col" class="px-6 py-3 font-medium">
-                                Departemen
-                            </th>
-                            <th scope="col" class="px-6 py-3 font-medium">
-                                Aksi
-                            </th>
+                            <th class="px-6 py-3 font-medium">Departemen</th>
+                            <th class="px-6 py-3 font-medium">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -66,7 +62,7 @@
                                 {{ department.department_name }}
                             </td>
                             <td class="px-6 py-4 space-x-3 whitespace-nowrap">
-                                <!-- Edit -->
+                                <!-- Tombol edit -->
                                 <button
                                     type="button"
                                     @click="openEditModal(department)"
@@ -74,7 +70,7 @@
                                 >
                                     <PenIcon size="24" />
                                 </button>
-                                <!-- Hapus -->
+                                <!-- Tombol hapus -->
                                 <button
                                     type="button"
                                     @click="openDeleteModal(department)"
@@ -85,7 +81,7 @@
                             </td>
                         </tr>
 
-                        <!-- Kalau hasil pencarian kosong -->
+                        <!-- Tampil kalau data kosong atau pencarian tidak cocok -->
                         <tr v-if="filteredDepartments.length === 0">
                             <td
                                 colspan="3"
@@ -98,20 +94,12 @@
                 </table>
             </div>
 
-            <!-- ==================== MODAL ==================== -->
-
-            <!-- Modal 1: tambah / edit departemen (satu modal untuk dua mode) -->
-            <Transition
-                enter-active-class="transition ease-out duration-200"
-                enter-from-class="opacity-0"
-                enter-to-class="opacity-100"
-                leave-active-class="transition ease-in duration-150"
-                leave-from-class="opacity-100"
-                leave-to-class="opacity-0"
-            >
+            <!-- ==================== MODAL TAMBAH / EDIT ==================== -->
+            <!-- Satu modal untuk dua mode: judulnya berubah sesuai isEditing -->
+            <Transition name="fade">
                 <div
                     v-if="isFormModalOpen"
-                    class="fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-black/50"
+                    :class="overlayClass"
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="form-modal-title"
@@ -127,7 +115,7 @@
                                 class="text-lg font-medium text-heading"
                             >
                                 {{
-                                    editingId
+                                    isEditing
                                         ? "Edit Departemen"
                                         : "Tambah Departemen"
                                 }}
@@ -138,71 +126,40 @@
                                 class="text-body bg-transparent hover:text-heading hover:bg-neutral-tertiary rounded-sm w-9 h-9 flex items-center justify-center ms-auto transition-all duration-200 ease-in-out active:scale-95"
                             >
                                 <CloseIcon size="24" />
-                                <span class="sr-only">Close modal</span>
+                                <span class="sr-only">Tutup</span>
                             </button>
                         </div>
 
-                        <!-- Form -->
                         <form @submit.prevent="submitDepartment">
                             <div class="space-y-4 py-2">
-                                <div>
+                                <!-- Dua input (kode dan nama) dibuat dari daftar formFields -->
+                                <div
+                                    v-for="field in formFields"
+                                    :key="field.name"
+                                >
                                     <label
-                                        for="department-code"
+                                        :for="field.name"
                                         class="block mb-2.5 text-sm font-medium text-heading"
                                     >
-                                        Kode Departemen
+                                        {{ field.label }}
                                     </label>
                                     <input
                                         type="text"
-                                        id="department-code"
-                                        v-model="departmentForm.department_code"
-                                        class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-sm focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
+                                        :id="field.name"
+                                        v-model="departmentForm[field.name]"
+                                        :class="inputClass"
                                         required
                                     />
+                                    <!-- Pesan error dari validasi Laravel -->
                                     <span
-                                        v-if="
-                                            departmentForm.errors
-                                                .department_code
-                                        "
+                                        v-if="departmentForm.errors[field.name]"
                                         class="text-xs text-red-500 mt-1 block"
                                     >
-                                        {{
-                                            departmentForm.errors
-                                                .department_code
-                                        }}
-                                    </span>
-                                </div>
-
-                                <div>
-                                    <label
-                                        for="department-name"
-                                        class="block mb-2.5 text-sm font-medium text-heading"
-                                    >
-                                        Nama Departemen
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="department-name"
-                                        v-model="departmentForm.department_name"
-                                        class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-sm focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                                        required
-                                    />
-                                    <span
-                                        v-if="
-                                            departmentForm.errors
-                                                .department_name
-                                        "
-                                        class="text-xs text-red-500 mt-1 block"
-                                    >
-                                        {{
-                                            departmentForm.errors
-                                                .department_name
-                                        }}
+                                        {{ departmentForm.errors[field.name] }}
                                     </span>
                                 </div>
                             </div>
 
-                            <!-- Tombol -->
                             <div
                                 class="flex justify-end items-center gap-3 pt-4 mt-2"
                             >
@@ -226,18 +183,11 @@
                 </div>
             </Transition>
 
-            <!-- Modal 2: konfirmasi hapus -->
-            <Transition
-                enter-active-class="transition ease-out duration-200"
-                enter-from-class="opacity-0"
-                enter-to-class="opacity-100"
-                leave-active-class="transition ease-in duration-150"
-                leave-from-class="opacity-100"
-                leave-to-class="opacity-0"
-            >
+            <!-- ==================== MODAL KONFIRMASI HAPUS ==================== -->
+            <Transition name="fade">
                 <div
                     v-if="isDeleteModalOpen"
-                    class="fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-black/50"
+                    :class="overlayClass"
                     role="alertdialog"
                     aria-modal="true"
                     aria-labelledby="delete-title"
@@ -293,20 +243,29 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onBeforeUnmount, watch } from "vue";
+import { computed, ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3";
+import Swal from "sweetalert2";
 import { AddIcon } from "@solar-icons/vue/bold/add";
 import { CloseIcon } from "@solar-icons/vue/bold/close";
 import { PenIcon } from "@solar-icons/vue/bold/pen";
 import { TrashBinTrashIcon } from "@solar-icons/vue/bold/trash-bin-trash";
 import { MinimalisticMagnifierIcon } from "@solar-icons/vue/linear/minimalistic-magnifier";
 import AdminLayout from "../../Layouts/AdminLayout.vue";
-import Swal from "sweetalert2";
 
 // ==================== DATA DARI CONTROLLER ====================
 const props = defineProps({
     departments: Array,
 });
+
+// ==================== CLASS YANG DIPAKAI BERULANG ====================
+// Latar gelap di belakang modal (dipakai kedua modal)
+const overlayClass =
+    "fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-black/50";
+
+// Tampilan kolom input di form
+const inputClass =
+    "bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-sm focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body";
 
 // ==================== NOTIFIKASI (SWEETALERT) ====================
 const page = usePage();
@@ -319,7 +278,7 @@ const Toast = Swal.mixin({
     timerProgressBar: true,
 });
 
-// Pesan dari controller (->with('success'/'error', ...)) tampil sebagai toast
+// Pesan dari controller (->with('success' / 'error', ...)) tampil sebagai toast
 watch(
     () => page.props.flash,
     (flash) => {
@@ -333,12 +292,11 @@ watch(
 // ==================== PENCARIAN ====================
 const searchQuery = ref("");
 
+// Daftar yang ditampilkan di tabel: semua data, atau yang cocok dengan pencarian
 const filteredDepartments = computed(() => {
-    if (!searchQuery.value.trim()) {
-        return props.departments;
-    }
+    const keyword = searchQuery.value.trim().toLowerCase();
+    if (!keyword) return props.departments;
 
-    const keyword = searchQuery.value.toLowerCase();
     return props.departments.filter(
         (department) =>
             department.department_code.toLowerCase().includes(keyword) ||
@@ -352,6 +310,13 @@ const filteredDepartments = computed(() => {
 //   editingId = angka   -> mode edit (angka = id departemen yang diedit)
 const isFormModalOpen = ref(false);
 const editingId = ref(null);
+const isEditing = computed(() => editingId.value !== null);
+
+// Kolom form. "name" harus sama dengan nama kolom di useForm dan di Laravel
+const formFields = [
+    { name: "department_code", label: "Kode Departemen" },
+    { name: "department_name", label: "Nama Departemen" },
+];
 
 const departmentForm = useForm({
     department_code: "",
@@ -360,9 +325,9 @@ const departmentForm = useForm({
 
 const submitButtonText = computed(() => {
     if (departmentForm.processing) {
-        return editingId.value ? "Updating..." : "Saving...";
+        return isEditing.value ? "Updating..." : "Saving...";
     }
-    return editingId.value ? "Update" : "Simpan";
+    return isEditing.value ? "Update" : "Simpan";
 });
 
 const openAddModal = () => {
@@ -385,20 +350,18 @@ const closeFormModal = () => {
 };
 
 const submitDepartment = () => {
-    const isEdit = !!editingId.value;
-
     const options = {
         preserveScroll: true,
         onSuccess: () => {
             closeFormModal();
             departmentForm.reset();
-            // toast sukses muncul otomatis lewat flash dari controller
+            // Toast sukses muncul otomatis lewat flash dari controller
         },
         onError: (errors) => {
-            // modal tetap terbuka supaya data tidak hilang
+            // Modal tetap terbuka supaya data yang sudah diisi tidak hilang
             Swal.fire({
                 icon: "error",
-                title: isEdit
+                title: isEditing.value
                     ? "Gagal memperbarui departemen"
                     : "Gagal menambahkan departemen",
                 text:
@@ -408,7 +371,7 @@ const submitDepartment = () => {
         },
     };
 
-    if (isEdit) {
+    if (isEditing.value) {
         departmentForm.put(`/admin/department/${editingId.value}`, options);
     } else {
         departmentForm.post("/admin/department", options);
@@ -426,6 +389,7 @@ const openDeleteModal = (department) => {
 };
 
 const closeDeleteModal = () => {
+    // Jangan tutup modal saat proses hapus sedang berjalan
     if (isDeleting.value) return;
     isDeleteModalOpen.value = false;
 };
@@ -438,10 +402,11 @@ const deleteDepartment = () => {
         onStart: () => (isDeleting.value = true),
         onSuccess: () => (isDeleteModalOpen.value = false),
         onFinish: () => (isDeleting.value = false),
+        // Toast "berhasil" atau "gagal" muncul lewat flash dari controller
     });
 };
 
-// ==================== TUTUP MODAL DENGAN TOMBOL ESCAPE ====================
+// ==================== TOMBOL ESCAPE MENUTUP MODAL ====================
 const closeModalOnEscape = (event) => {
     if (event.key !== "Escape") return;
 
@@ -454,3 +419,17 @@ onBeforeUnmount(() =>
     window.removeEventListener("keydown", closeModalOnEscape),
 );
 </script>
+
+<style scoped>
+/* Animasi muncul/hilang untuk modal (dipakai <Transition name="fade">) */
+.fade-enter-active {
+    transition: opacity 200ms ease-out;
+}
+.fade-leave-active {
+    transition: opacity 150ms ease-in;
+}
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>

@@ -7,89 +7,112 @@ use App\Models\Ticket;
 use App\Models\Tracking;
 use App\Models\Users;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class TicketController extends Controller
 {
-    public function history(Ticket $tickets)
+    // Daftar semua tiket (halaman "Data Tiket")
+    public function history()
     {
-        $tickets = Ticket::with(['creator', 'department', 'technician','tracking.user'])
-            ->latest()->get();
-        return Inertia::render('Admin/History',[
-            'tickets'=>$tickets
+        return Inertia::render('Admin/History', [
+            'tickets' => Ticket::with(['creator', 'department', 'technician', 'tracking.user'])
+                ->latest()
+                ->get(),
         ]);
     }
 
+    // Detail satu tiket, beserta daftar teknisi untuk dipilih
     public function show(Ticket $ticket)
     {
-        $ticket->load('creator', 'department', 'technician','tracking.user','review');
-        $technician = Users::where('role', 'it_support')->get(['id', 'name']);
         return Inertia::render('Admin/TicketDetail', [
-            'ticket' => $ticket,
-            'technician' => $technician
+            'ticket'      => $ticket->load('creator', 'department', 'technician', 'tracking.user', 'review'),
+            'technicians' => Users::where('role', 'it_support')->get(['id', 'name']),
         ]);
     }
 
-    public function update(Request $request, Ticket $ticket)
+    // Memproses tiket: pilih teknisi, lalu status menjadi "in progress"
+    public function process(Request $request, Ticket $ticket)
     {
-        $validated=$request->validate([
-            'assigned_to' => 'required|exists:users,id',
+        $validated = $request->validate([
+            // Teknisi harus user yang ada DAN berole it_support
+            'assigned_to' => ['required', Rule::exists('users', 'id')->where('role', 'it_support')],
         ]);
+
         $ticket->update([
-            'status' => 'in progress',
+            'status'      => 'in progress',
             'assigned_to' => $validated['assigned_to'],
         ]);
 
-        return redirect()->back()->with('success', 'Ticket berhasil diperbarui.');
+        return back()->with('success', 'Ticket berhasil diperbarui.');
     }
+
+    // Menyelesaikan tiket: hanya tiket "in progress", dan hanya oleh teknisi yang ditugaskan
+    public function done(Request $request, Ticket $ticket)
+    {
+        abort_unless($ticket->status === 'in progress', 403);
+        abort_unless((int) $ticket->assigned_to === (int) $request->user()->id, 403);
+
+        $ticket->update([
+            'status'      => 'done',
+            'resolved_at' => now(),
+        ]);
+
+        return back();
+    }
+
+    // ==================== CATATAN PELACAKAN ====================
 
     public function storeTracking(Request $request, Ticket $ticket)
     {
-        abort_if($ticket->status === 'done', 403);
-        $data = $request->validate([
-            'note' => 'required|string|max:500',
-        ]);
+        $this->abortIfDone($ticket);
 
-        // Perbaikan 3: Menggunakan metode insert langsung yang dijamin aman
         Tracking::create([
             'ticket_id' => $ticket->id,
             'user_id'   => $request->user()->id,
-            'note'      => $data['note'],
+            'note'      => $this->validatedNote($request),
         ]);
 
-        return redirect()->route('admin.tickets.show', $ticket->id);
+        return back();
     }
 
     public function updateTracking(Request $request, Ticket $ticket, Tracking $tracking)
     {
-        abort_if($ticket->status === 'done', 403);
-        $data = $request->validate([
-            'note' => 'required|string|max:500',
-        ]);
+        $this->abortIfDone($ticket);
+        $this->abortUnlessBelongsTo($ticket, $tracking);
 
-        $tracking->update($data);
+        $tracking->update(['note' => $this->validatedNote($request)]);
 
         return back();
     }
 
-    public function destroy(Ticket $ticket, Tracking $tracking)
+    public function destroyTracking(Ticket $ticket, Tracking $tracking)
     {
-        abort_if($ticket->status === 'done', 403);
+        $this->abortIfDone($ticket);
+        $this->abortUnlessBelongsTo($ticket, $tracking);
+
         $tracking->delete();
 
-        return redirect()->back()->with('success', 'Tracking berhasil dihapus');
+        return back()->with('success', 'Tracking berhasil dihapus');
     }
 
-    public function done(Ticket $ticket)
+    // ==================== FUNGSI BANTU (hanya dipakai di controller ini) ====================
+
+    // Tiket yang sudah selesai tidak boleh diubah catatan pelacakannya
+    private function abortIfDone(Ticket $ticket): void
     {
-    // hanya tiket yang sedang diproses, dan hanya oleh teknisi yang ditugaskan
-        abort_unless($ticket->status === 'in progress', 403);
-        abort_unless((int) $ticket->assigned_to === auth()->id(), 403);
+        abort_if($ticket->status === 'done', 403);
+    }
 
-        $ticket->update(['status' => 'done',
-        'resolved_at'=>now()]);
+    // Catatan harus benar-benar milik tiket yang ada di alamat (URL)
+    private function abortUnlessBelongsTo(Ticket $ticket, Tracking $tracking): void
+    {
+        abort_unless($tracking->ticket_id === $ticket->id, 404);
+    }
 
-        return back();
+    // Validasi isi catatan, mengembalikan teks catatannya
+    private function validatedNote(Request $request): string
+    {
+        return $request->validate(['note' => 'required|string|max:500'])['note'];
     }
 }

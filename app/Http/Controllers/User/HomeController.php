@@ -9,10 +9,16 @@ use Inertia\Inertia;
 
 class HomeController extends Controller
 {
-    public function index(Ticket $tickets){
-        $tickets = Ticket::with(['department', 'creator','technician'])->latest()->get();
+    public function index(Request $request)
+    {
+        // Ambil hanya tiket milik departemen user yang sedang login
+        $tickets = Ticket::with('technician')
+            ->where('department_id', $request->user()->department_id)
+            ->latest()
+            ->get();
+
         return Inertia::render('User/Home', [
-            'tickets' => $tickets
+            'tickets' => $tickets,
         ]);
     }
 }

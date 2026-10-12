@@ -5,27 +5,35 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class TicketController extends Controller
 {
-    public function index(){
+    // Daftar tiket yang dibuat oleh user yang sedang login
+    public function index(Request $request)
+    {
+        $tickets = Ticket::where('created_by', $request->user()->id)
+            ->with(['department', 'creator', 'technician', 'tracking.user'])
+            ->latest()
+            ->get();
+
         return Inertia::render('User/Ticket', [
-            'tickets' => Ticket::where('created_by', Auth::id())->with(['department', 'creator', 'technician','tracking.user'])->latest()->get()
+            'tickets' => $tickets,
         ]);
     }
 
-    public function store(Request $request){
-
-        $validated=$request->validate([
-            'category' => 'required|string|in:Hardware,Software,Jaringan,Printer,Lainnya',
-            'priority' => 'required|string|in:Low,Medium,High,Critical',
+    // Simpan tiket baru dari form pengajuan
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'category'    => 'required|string|in:Hardware,Software,Jaringan,Printer,Lainnya',
+            'priority'    => 'required|string|in:Low,Medium,High,Critical',
             'description' => 'required|string',
-            'photo' => 'nullable|image|max:5120',
+            'photo'       => 'nullable|image|max:5120', // maksimal 5 MB
         ]);
 
+        // Kalau ada foto, simpan ke storage/app/public/tickets
         if ($request->hasFile('photo')) {
             $validated['photo'] = $request->file('photo')->store('tickets', 'public');
         }
@@ -34,15 +42,35 @@ class TicketController extends Controller
             ...$validated,
             'ticket_number' => $this->generateTicketNumber(),
             'department_id' => $request->user()->department_id,
-            'created_by' => $request->user()->id,
-            'eta' => now()->addDays()
+            'created_by'    => $request->user()->id,
+            'eta'           => now()->addDay(), // target selesai: 1 hari dari sekarang
         ]);
-
 
         return redirect()->route('user.home')->with('success', 'Ticket created successfully.');
     }
 
-    private function generateTicketNumber():string
+    // Detail satu tiket (hanya untuk pembuatnya)
+    public function show(Request $request, Ticket $ticket)
+    {
+        $this->abortUnlessOwner($request, $ticket);
+
+        return Inertia::render('User/TicketDetail', [
+            'ticket' => $ticket->load('creator', 'department', 'technician', 'tracking.user', 'review'),
+        ]);
+    }
+
+    // Batalkan tiket (hanya untuk pembuatnya)
+    public function update(Request $request, Ticket $ticket)
+    {
+        $this->abortUnlessOwner($request, $ticket);
+
+        $ticket->update(['status' => 'cancelled']);
+
+        return redirect()->back()->with('success', 'Ticket berhasil dibatalkan.');
+    }
+
+    // Buat nomor tiket unik, contoh: TCK-20261011114800-A1B2
+    private function generateTicketNumber(): string
     {
         do {
             $number = 'TCK-' . now()->format('YmdHis') . '-' . strtoupper(Str::random(4));
@@ -51,24 +79,9 @@ class TicketController extends Controller
         return $number;
     }
 
-    public function show(Ticket $ticket)
+    // Hentikan dengan error 403 kalau tiket bukan milik user yang sedang login
+    private function abortUnlessOwner(Request $request, Ticket $ticket): void
     {
-        abort_unless($ticket->created_by === Auth::id(), 403);
-        return Inertia::render('User/TicketDetail', [
-            'ticket' => $ticket->load('creator', 'department', 'technician','tracking.user','review')
-        ]);
-    }
-
-    public function update(Request $request, Ticket $ticket)
-    {
-        if($ticket->created_by !== Auth::id()){
-            abort(403);
-        }
-
-        $ticket->update([
-            'status' => 'cancelled'
-        ]);
-
-        return redirect()->back()->with('success', 'Ticket berhasil dibatalkan.');
+        abort_unless($ticket->created_by === $request->user()->id, 403);
     }
 }

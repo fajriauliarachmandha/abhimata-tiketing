@@ -17,13 +17,13 @@ class AuthenticatedSessionController extends Controller
     // proses login
     public function store(Request $request){
         $credentials = $request->validate([
-            'username'=>'required|string',
+            'email'=>'required|string',
             'password'=>'required|string',
         ]);
 
         if (!Auth::attempt($credentials)){
             return back()->withErrors([
-                'username'=>'Username atau password salah!',
+                'email'=>'Username atau password salah!',
             ]);
         }
 
